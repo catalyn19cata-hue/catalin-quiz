@@ -78,6 +78,18 @@ h1{
 
 .btn:hover{
     transform:scale(1.05);
+    .btn::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:40px;
+    background:linear-gradient(
+        120deg,
+        rgba(255,255,255,0.25),
+        rgba(255,255,255,0.05)
+    );
+    pointer-events:none;
+}
 }
 
 .btn::after{
@@ -180,6 +192,7 @@ Conținut extra pe YouTube
 </div>
 </body>
 </html>
+
 
 
 
