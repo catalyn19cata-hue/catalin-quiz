@@ -53,16 +53,25 @@ h1{
 .btn{
     display:block;
     position:relative;
-    background:linear-gradient(90deg,#0000FF,#0099FF);
+
+    background:rgba(0,120,255,0.15);   /* transparent */
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
     color:white;
     padding:18px 60px 18px 18px;
     margin:15px 0;
     border-radius:40px;
     text-decoration:none;
     font-size:18px;
-    border:2px solid #66ccff;
-    box-shadow:0px 6px 0px black;
-    transition:0.2s ease, box-shadow 0.2s ease;
+
+    border:1px solid rgba(255,255,255,0.25);
+
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.1),
+        0 8px 20px rgba(0,0,0,0.25);
+
+    transition:0.25s ease;
 }
 
 .btn:hover{
@@ -169,6 +178,7 @@ Conținut extra pe YouTube
 </div>
 </body>
 </html>
+
 
 
 
