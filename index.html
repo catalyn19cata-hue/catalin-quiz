@@ -1,1 +1,247 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catalin Quiz</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Jumble, sans-serif;
+    background-image:url("img.jpeg");
+    background-size:cover;
+    background-position:center;
+    text-align:center;
+    min-height:100vh;
+}
+
+.container{
+    max-width:400px;
+    margin:60px auto;
+    padding:30px;
+    border-radius:25px;
+
+    background:linear-gradient(
+    135deg,
+    rgba(0,80,255,0.05),
+    rgba(0,0,60,0.04)
+);
+
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+
+    border:1px solid #66ccff;
+
+    box-shadow:
+       inset 0 1px 0 rgba(255,255,255,0.4),
+       0 6px 0 #003a8f,                     
+       0 12px 20px rgba(0,0,0,0.25);
+}
+
+.profile{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    margin-top:30px;
+    object-fit:cover;
+    border:5px solid #6699FF;
+}
+
+h1{
+    color:#FFFFFF;
+}
+
+.btn{
+    display:block;
+    position:relative;
+    overflow:hidden;
+
+    background:linear-gradient(
+        90deg,
+        rgba(0,0,255,0.85),
+        rgba(0,153,255,0.85)
+    );
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+
+    color:white;
+    padding:18px 60px 18px 18px;
+    margin:15px 0;
+    border-radius:40px;
+    text-decoration:none;
+    font-size:18px;
+
+    border:1px solid rgba(255,255,255,0.25);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.35),
+        0 8px 20px rgba(0,0,0,0.25); 
+
+    transition:0.25s ease;
+}
+
+.btn:hover{
+   transform:translateY(-2px) scale(1.03);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.45),
+        0 14px 30px rgba(0,0,0,0.35);
+}
+    .btn:active{
+   transform:translateY(6px);
+   box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        0 2px 8px rgba(0,0,0,0.25);
+    }
+.btn::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius:40px;
+    background:linear-gradient(
+        120deg,
+        rgba(255,255,255,0.25),
+        rgba(255,255,255,0.05)
+    );
+    pointer-events:none;
+}
+
+.btn::after{
+    content:"›";
+    position:absolute;
+    right:20px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:26px;
+    color:#66ccff;
+}
+
+.footer{
+    margin-top:25px;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+}
+
+.icon{
+    width:35px;
+    height:35px;
+    border-radius:18px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    text-decoration:none;
+    font-size:18px;
+    transition:0.2s;
+}
+
+.yt{
+    background:#ff0000;
+}
+
+.mail{
+    background:#0099ff;
+}
+
+.icon:hover{
+    transform:scale(1.5);
+    box-shadow:0 0 10px #66ccff;
+}
+
+.tikt{
+    background:#000000;
+}
+
+.ig{
+    background:#FFFFFF;
+}
+    .ig svg{
+    filter: drop-shadow(0 0 3px rgba(255,255,255,0.8));
+}
+    .ig svg{
+    transform:scale(1.2);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<img class="profile" src="dadada.jpeg" alt="Catalin profile">
+
+<h1>Catalin Quiz</h1>
+
+<a class="btn" href="https://studio.youtube.com/channel/UCXCk3fpz4rE00CrgeGWAATw/editing/profile">
+Intră în Quiz Live
+</a>
+
+<a class="btn" href="https://studio.youtube.com/channel/UCXCk3fpz4rE00CrgeGWAATw/editing/profile">
+Descarcă Ebook-ul cu 1000 Întrebări
+</a>
+
+<a class="btn" href="https://www.youtube.com/@stii_sau_nu_stii" target="_blank" rel="noopener noreferrer">
+Conținut extra pe YouTube
+</a>
+
+<a class="btn" href="mailto:catalyn19cata@gmail.com">
+Contact & Colaborări
+</a>
+
+<div class="footer">
+   <a class="icon yt" href="https://www.youtube.com/@stii_sau_nu_stii">▶</a>
+
+   <a class="icon tikt" href="https://www.tiktok.com/@sa_fim_mai_destepti?_r=1&_t=ZN-93t7KVMmMTu/">
+      <svg viewBox="0 0 24 24" width="30" height="30" fill="white">
+      <path d="M16.5 3c.4 2.1 2.1 3.8 4.2 4.2v3c-1.5 0-3-.5-4.2-1.3v6.3a6.5 6.5 0 11-5.6-6.4v3a3.5 3.5 0 102.6 3.4V3h3z"/>
+      </svg> 
+   </a>
+
+   <a class="icon mail" href="mailto:catalyn19cata@gmail.com">✉️</a>
+
+   <a class="icon ig" href="https://www.instagram.com/stii_sau_nu_stii?utm_source=qr&igsh=MWx4ZmM3ZXRhbzY5bQ==">
+<svg viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="instaGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#feda75"/>
+      <stop offset="25%" stop-color="#fa7e1e"/>
+      <stop offset="50%" stop-color="#d62976"/>
+      <stop offset="75%" stop-color="#962fbf"/>
+      <stop offset="100%" stop-color="#4f5bd5"/>
+    </linearGradient>
+  </defs>
+
+  <path fill="url(#instaGradient)" d="M7 2C4.2 2 2 4.2 2 7v10c0 2.8 2.2 5 5 5h10c2.8 0 5-2.2 
+  5-5V7c0-2.8-2.2-5-5-5H7zm10 2c1.7 0 3 1.3 
+  3 3v10c0 1.7-1.3 3-3 3H7c-1.7 
+  0-3-1.3-3-3V7c0-1.7 1.3-3 
+  3-3h10zm-5 3a5 5 0 100 10 5 5 0 
+  000-10zm0 2a3 3 0 110 6 3 3 0 
+  010-6zm4.8-2.3a1.2 1.2 0 100 
+  2.4 1.2 1.2 0 000-2.4z"/>
+</svg>
+   </a>
+</div>
+
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
