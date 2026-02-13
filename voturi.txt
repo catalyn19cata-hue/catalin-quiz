@@ -72,7 +72,7 @@ h2{
 <body>
 
 <div class="container">
-<h2 id="question">Așteaptă următoarea întrebare...</h2>
+<h2 id="question">Care este raspunsul corect?...</h2>
 
 <button class="btn" onclick="vote('A')">Varianta A</button>
 <button class="btn" onclick="vote('B')">Varianta B</button>
@@ -87,4 +87,5 @@ h2{
 </script>
 
 </body>
+
 </html>
