@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Live</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background-image:url("img1.jpeg");
+    background-size:cover;
+    background-position:center;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.container{
+    width:350px;
+    padding:30px;
+    border-radius:25px;
+    text-align:center;
+
+    background:linear-gradient(
+        135deg,
+        rgba(0,80,255,0.12),
+        rgba(0,0,60,0.08)
+    );
+
+    backdrop-filter:blur(18px);
+    border:1px solid #66ccff;
+
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.2),
+        0 20px 40px rgba(0,0,0,0.4);
+}
+
+h2{
+    color:white;
+}
+
+.btn{
+    display:block;
+    margin:10px 0;
+    padding:15px;
+    border-radius:40px;
+    color:white;
+    text-decoration:none;
+    background:linear-gradient(90deg,#0000FF,#0099FF);
+    border:2px solid #66ccff;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+.result{
+    color:white;
+    margin-top:20px;
+    font-size:18px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h2 id="question">Așteaptă următoarea întrebare...</h2>
+
+<button class="btn" onclick="vote('A')">Varianta A</button>
+<button class="btn" onclick="vote('B')">Varianta B</button>
+
+<div class="result" id="result"></div>
+</div>
+
+<script>
+// 🔥 pune aici firebaseConfig
+// const firebaseConfig = { ... };
+
+</script>
+
+</body>
+</html>
