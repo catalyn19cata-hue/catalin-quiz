@@ -7,45 +7,41 @@
 
 <style>
 body{
-margin:0;
-font-family:Arial;
-background-image:url("img1.jpeg");
-background-size:cover;
-background-position:center;
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
+  margin:0;
+  font-family:Arial;
+  background-image:url("img1.jpeg");
+  background-size:cover;
+  background-position:center;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-
 .container{
-width:350px;
-padding:30px;
-border-radius:25px;
-text-align:center;
-background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
-backdrop-filter:blur(18px);
-border:1px solid #66ccff;
+  width:350px;
+  padding:30px;
+  border-radius:25px;
+  text-align:center;
+  background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
+  backdrop-filter:blur(18px);
+  border:1px solid #66ccff;
 }
-
 h2,h3{color:white;}
-
 .btn{
-display:block;
-margin:10px 0;
-padding:15px;
-border-radius:40px;
-color:white;
-background:linear-gradient(90deg,#0000FF,#0099FF);
-border:2px solid #66ccff;
-cursor:pointer;
-transition:0.2s;
+  display:block;
+  margin:10px 0;
+  padding:15px;
+  border-radius:40px;
+  color:white;
+  background:linear-gradient(90deg,#0000FF,#0099FF);
+  border:2px solid #66ccff;
+  cursor:pointer;
+  transition:0.2s;
 }
-
 .result{
-color:white;
-margin-top:15px;
-font-size:18px;
+  color:white;
+  margin-top:15px;
+  font-size:18px;
 }
 </style>
 </head>
@@ -53,9 +49,9 @@ font-size:18px;
 <body>
 
 <div class="container">
-<h3 id="timer"></h3>
-<h2 id="question">Așteaptă următoarea întrebare...</h2>
-<div id="result" class="result"></div>
+  <h3 id="timer"></h3>
+  <h2 id="question">Așteaptă următoarea întrebare...</h2>
+  <div id="result" class="result"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -64,10 +60,10 @@ font-size:18px;
 <script>
 
 const firebaseConfig={
- apiKey:"APIKEYUL_TAU",
- authDomain:"web-quiz-3eea6.firebaseapp.com",
- databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
- projectId:"web-quiz-3eea6"
+  apiKey:"APIKEYUL_TAU",
+  authDomain:"web-quiz-3eea6.firebaseapp.com",
+  databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"web-quiz-3eea6"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -75,93 +71,108 @@ const db=firebase.database();
 
 let liveData=null;
 
+function getVoteKey(){
+  return "voted_"+(liveData?.question || "");
+}
+
+function alreadyVoted(){
+  return localStorage.getItem(getVoteKey());
+}
+
 function vote(opt){
 
-// daca nu avem intrebare live sau e pauza
-if(!liveData || liveData.paused) return;
+  if(!liveData || liveData.paused) return;
 
-// 🔥 un vot per intrebare
-const voteKey="voted_"+btoa(liveData.question||"");
+  const voteKey=getVoteKey();
 
-if(localStorage.getItem(voteKey)) return;
+  // un vot per intrebare
+  if(localStorage.getItem(voteKey)) return;
 
-localStorage.setItem(voteKey,"yes");
+  localStorage.setItem(voteKey,"yes");
 
-// 🔥 TRIMITE VOT
-db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
+  // trimite vot
+  db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
-// 💜 mov DOAR local
-document.querySelectorAll(".dynamic").forEach(b=>{
-if(b.dataset.key===opt){
-b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
-}
-});
-
+  // culoare mov instant
+  document.querySelectorAll(".dynamic").forEach(b=>{
+    if(b.dataset.key===opt){
+      b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+    }
+  });
 }
 
 db.ref("live").on("value",snap=>{
 
-const data=snap.val();
-if(!data) return;
+  const data=snap.val();
+  if(!data) return;
 
-liveData=data;
+  liveData=data;
 
-const container=document.querySelector(".container");
+  const container=document.querySelector(".container");
 
-// sterge butoane vechi
-document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+  // sterge butoane vechi
+  document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
-// 🔴 FINAL
-if(data.finished){
-question.innerText="Final";
-timer.innerText="";
-result.innerText="";
-return;
-}
+  // FINAL
+  if(data.finished){
+    question.innerText="Final";
+    timer.innerText="";
+    result.innerText="";
+    return;
+  }
 
-// 🔴 PAUZA
-if(data.paused){
-question.innerText="Așteaptă următoarea întrebare...";
-timer.innerText="";
-result.innerText="";
-return;
-}
+  // PAUZA
+  if(data.paused){
+    question.innerText="Așteaptă următoarea întrebare...";
+    timer.innerText="";
+    result.innerText="";
+    return;
+  }
 
-// 🔥 INTREBARE
-question.innerText=data.question||"";
-timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
+  // intrebare
+  question.innerText=data.question||"";
+  timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
 
-const opt=data.options||{};
-const votes=data.votes||{};
+  const opt=data.options||{};
+  const votes=data.votes||{};
 
-Object.keys(opt).forEach(k=>{
+  const voted = alreadyVoted();
 
-const btn=document.createElement("button");
-btn.className="btn dynamic";
-btn.innerText=opt[k];
-btn.dataset.key=k;
+  Object.keys(opt).forEach(k=>{
 
-btn.onclick=()=>vote(k);
+    const btn=document.createElement("button");
+    btn.className="btn dynamic";
+    btn.innerText=opt[k];
+    btn.dataset.key=k;
+    btn.onclick=()=>vote(k);
 
-container.insertBefore(btn,result);
+    // pastreaza mov daca deja a votat
+    if(voted){
+      btn.disabled=true;
+      if(localStorage.getItem(getVoteKey())==="yes"){
+        // doar stil general blocat
+        btn.style.opacity="0.9";
+      }
+    }
 
-});
+    container.insertBefore(btn,result);
+  });
 
-// 🔥 AFISARE VOTURI
-let txt="";
-Object.keys(opt).forEach(k=>{
-txt+=k+": "+(votes[k]||0)+" voturi | ";
-});
-result.innerText=txt;
+  // afisare voturi
+  let txt="";
+  Object.keys(opt).forEach(k=>{
+    txt+=k+": "+(votes[k]||0)+" voturi | ";
+  });
+  result.innerText=txt;
 
-// 🟢 RASPUNS CORECT LA FINAL
-if(typeof data.timer==="number" && data.timer<=0 && data.correct){
-document.querySelectorAll(".dynamic").forEach(b=>{
-if(b.dataset.key===data.correct){
-b.style.background="linear-gradient(90deg,#00c853,#00e676)";
-}
-});
-}
+  // raspuns corect cand timer = 0
+  if(typeof data.timer==="number" && data.timer<=0 && data.correct){
+    document.querySelectorAll(".dynamic").forEach(b=>{
+      if(b.dataset.key===data.correct){
+        b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+      }
+    });
+  }
 
 });
 
