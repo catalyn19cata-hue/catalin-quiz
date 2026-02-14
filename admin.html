@@ -19,7 +19,7 @@ align-items:center;
 }
 
 .container{
-width:400px;
+width:420px;
 padding:30px;
 border-radius:25px;
 text-align:center;
@@ -54,7 +54,7 @@ color:white;
 font-size:14px;
 margin-top:10px;
 text-align:left;
-max-height:150px;
+max-height:180px;
 overflow:auto;
 }
 </style>
@@ -93,10 +93,26 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let playlist=[];
+// 👑 PLAYLIST CU 3 EXEMPLE
+let playlist=[
+{
+question:"Capitala României?",
+options:{A:"București",B:"Cluj",C:"Iași"}
+},
+{
+question:"2+2=?",
+options:{A:"3",B:"4",C:"5"}
+},
+{
+question:"Culoarea cerului?",
+options:{A:"Roșu",B:"Albastru",C:"Verde"}
+}
+];
+
 let index=0;
 
-// 🔵 adauga intrebare in lista
+renderList();
+
 function addQuestion(){
 
  const q=document.getElementById("q").value;
@@ -119,7 +135,6 @@ function addQuestion(){
  document.getElementById("c").value="";
 }
 
-// 🔵 afiseaza playlist
 function renderList(){
  let txt="";
  playlist.forEach((p,i)=>{
@@ -128,20 +143,17 @@ function renderList(){
  document.getElementById("list").innerHTML=txt;
 }
 
-// 🔵 porneste prima intrebare
 function startLive(){
  index=0;
  pushLive();
 }
 
-// 🔵 trece la urmatoarea
 function next(){
  index++;
- if(index>=playlist.length) return alert("Ai ajuns la final");
+ if(index>=playlist.length) return alert("Final playlist");
  pushLive();
 }
 
-// 🔥 trimite live in Firebase
 function pushLive(){
 
  const data=playlist[index];
@@ -156,7 +168,6 @@ function pushLive(){
  startTimer();
 }
 
-// 🔥 timer live
 function startTimer(){
 
  let t=20;
