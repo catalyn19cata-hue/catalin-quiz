@@ -10,13 +10,11 @@ margin:0;
 font-family:Jumble, sans-serif;
 background-image:url("img2.jpeg");
 background-size:cover;
-background-position:center;
-min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
+min-height:100vh;
 }
-
 .container{
 width:420px;
 padding:30px;
@@ -27,7 +25,6 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 color:white;
 }
-
 input,select{
 width:90%;
 padding:12px;
@@ -35,7 +32,6 @@ border-radius:10px;
 border:none;
 margin-bottom:10px;
 }
-
 .btn{
 display:block;
 width:100%;
@@ -47,20 +43,8 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
-
-#list{
-margin-top:15px;
-text-align:left;
-max-height:160px;
-overflow:auto;
-font-size:14px;
-}
-
-#preview{
-margin-top:15px;
-font-size:15px;
-line-height:1.4;
-}
+#list{margin-top:10px;text-align:left;}
+#preview{margin-top:10px;}
 </style>
 </head>
 
@@ -82,12 +66,13 @@ line-height:1.4;
 </select>
 
 <button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
+<button class="btn" onclick="previewManual()">👁 PREVIEW</button>
 <button class="btn" onclick="startLive()">START ▶</button>
 <button class="btn" onclick="next()">NEXT ▶</button>
 
 <div id="list"></div>
 
-<h3 style="margin-top:15px;">Preview întrebare</h3>
+<h3>Preview întrebare</h3>
 <div id="preview"></div>
 
 </div>
@@ -106,23 +91,10 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-// 🔥 PLAYLIST INITIAL
 let playlist=[
-{
-question:"Capitala României?",
-options:{A:"București",B:"Cluj",C:"Iași"},
-correct:"A"
-},
-{
-question:"2+2=?",
-options:{A:"3",B:"4",C:"5"},
-correct:"B"
-},
-{
-question:"Culoarea cerului?",
-options:{A:"Roșu",B:"Albastru",C:"Verde"},
-correct:"B"
-}
+{question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
+{question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"},
+{question:"Culoarea cerului?",options:{A:"Roșu",B:"Albastru",C:"Verde"},correct:"B"}
 ];
 
 let index=0;
@@ -130,7 +102,6 @@ let index=0;
 renderList();
 updatePreview();
 
-// ➕ adauga intrebare manual
 function addQuestion(){
 
  const q=document.getElementById("q").value;
@@ -148,15 +119,8 @@ function addQuestion(){
  });
 
  renderList();
- updatePreview();
-
- document.getElementById("q").value="";
- document.getElementById("a").value="";
- document.getElementById("b").value="";
- document.getElementById("c").value="";
 }
 
-// 🧾 afiseaza playlist
 function renderList(){
  let txt="";
  playlist.forEach((p,i)=>{
@@ -165,12 +129,25 @@ function renderList(){
  document.getElementById("list").innerHTML=txt;
 }
 
-// 👁 preview intrebare curenta
+function previewManual(){
+
+ const q=document.getElementById("q").value;
+ const A=document.getElementById("a").value;
+ const B=document.getElementById("b").value;
+ const C=document.getElementById("c").value;
+ const correct=document.getElementById("correct").value;
+
+ document.getElementById("preview").innerHTML=
+ "➡️ "+q+
+ "<br>A: "+A+
+ "<br>B: "+B+
+ "<br>C: "+C+
+ "<br><span style='color:#00ff95;'>Corect: "+correct+"</span>";
+}
+
 function updatePreview(){
-
- if(!playlist[index]) return;
-
  const p=playlist[index];
+ if(!p) return;
 
  document.getElementById("preview").innerHTML=
  "➡️ "+p.question+
@@ -180,20 +157,17 @@ function updatePreview(){
  "<br><span style='color:#00ff95;'>Corect: "+p.correct+"</span>";
 }
 
-// ▶ start live
 function startLive(){
  index=0;
  pushLive();
 }
 
-// ▶ next intrebare
 function next(){
  index++;
  if(index>=playlist.length) return alert("Final playlist");
  pushLive();
 }
 
-// 🔥 trimite live in Firebase
 function pushLive(){
 
  const data=playlist[index];
@@ -210,15 +184,11 @@ function pushLive(){
  updatePreview();
 }
 
-// ⏱ timer live
 function startTimer(){
-
  let t=20;
-
  const interval=setInterval(()=>{
    t--;
    db.ref("live/timer").set(t);
-
    if(t<=0) clearInterval(interval);
  },1000);
 }
