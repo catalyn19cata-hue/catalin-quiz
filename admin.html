@@ -69,6 +69,7 @@ cursor:pointer;
 <button class="btn" onclick="previewManual()">👁 PREVIEW</button>
 <button class="btn" onclick="startLive()">START ▶</button>
 <button class="btn" onclick="next()">NEXT ▶</button>
+<button class="btn" onclick="resetLive()">RESET 🔄</button>
 
 <div id="list"></div>
 
@@ -192,7 +193,19 @@ function startTimer(){
    if(t<=0) clearInterval(interval);
  },1000);
 }
+ function resetLive(){
+
+ db.ref("live").set({
+   question:"Așteaptă următoarea întrebare...",
+   options:{},
+   timer:"",
+   votes:{}
+ });
+
+ document.getElementById("preview").innerHTML="Live resetat.";
+}
 </script>
 
 </body>
 </html>
+
