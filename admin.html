@@ -138,7 +138,6 @@ function preview(){
 alert(playlist[currentIndex].question);
 }
 
-// 🚀 NEXT = porneste automat timer
 function send(){
 
 const q=playlist[currentIndex];
@@ -153,7 +152,6 @@ votes:{A:0,B:0,C:0},
 lastClick:""
 });
 
-// 🔥 timer auto
 let t=20;
 const interval=setInterval(()=>{
 if(t<0){clearInterval(interval);return;}
@@ -164,8 +162,10 @@ t--;
 currentIndex++;
 }
 
-// 🔄 RESET
 function resetLive(){
+
+currentIndex=0;
+
 db.ref("live").set({
 question:"Așteaptă următoarea întrebare...",
 timer:0,
@@ -175,12 +175,11 @@ options:{}
 });
 }
 
-// ⛔ STOP
 function stopQuestion(){
 db.ref("live/paused").set(true);
 }
 
-// 🎬 animatie butoane admin
+// animatie butoane
 document.querySelectorAll(".btn").forEach(b=>{
 b.addEventListener("click",()=>{
 b.style.transform="scale(0.9)";
