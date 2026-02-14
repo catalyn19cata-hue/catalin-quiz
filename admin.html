@@ -55,7 +55,7 @@ transition:0.15s ease;
 color:white;
 text-align:left;
 margin-top:15px;
-max-height:120px;
+max-height:140px;
 overflow:auto;
 }
 
@@ -82,8 +82,8 @@ overflow:auto;
 <button class="btn" onclick="addQuestion()">➕ Adaugă în playlist</button>
 <button class="btn" onclick="preview()">👁️ Preview</button>
 <button class="btn" onclick="send()">▶️ NEXT</button>
-<button class="btn" onclick="startTimer()">⏱️ Start Timer</button>
-<button class="btn" onclick="stopQuestion()">⛔ Stop</button>
+<button class="btn" onclick="resetLive()">🔄 RESET</button>
+<button class="btn" onclick="stopQuestion()">⛔ STOP</button>
 
 <div id="playlist" class="playlist"></div>
 
@@ -104,7 +104,11 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let playlist=[];
+let playlist=[
+{question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
+{question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"}
+];
+
 let currentIndex=0;
 
 function renderPlaylist(){
@@ -114,6 +118,8 @@ playlist.forEach((q,i)=>{
 div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
 });
 }
+
+renderPlaylist();
 
 function addQuestion(){
 playlist.push({
@@ -129,45 +135,56 @@ renderPlaylist();
 }
 
 function preview(){
-alert(playlist[currentIndex]?.question);
+alert(playlist[currentIndex].question);
 }
 
+// 🚀 NEXT = porneste automat timer
 function send(){
+
 const q=playlist[currentIndex];
-if(!q) return;
 
 db.ref("live").set({
-paused:false,
 question:q.question,
 options:q.options,
 correct:q.correct,
 timer:20,
+paused:false,
 votes:{A:0,B:0,C:0},
 lastClick:""
 });
 
-currentIndex++;
-}
-
-function startTimer(){
+// 🔥 timer auto
 let t=20;
 const interval=setInterval(()=>{
 if(t<0){clearInterval(interval);return;}
 db.ref("live/timer").set(t);
 t--;
 },1000);
+
+currentIndex++;
 }
 
-function stopQuestion(){
+// 🔄 RESET
+function resetLive(){
 db.ref("live").set({
-paused:true
+question:"Așteaptă următoarea întrebare...",
+timer:0,
+paused:true,
+votes:{},
+options:{}
 });
 }
 
+// ⛔ STOP
+function stopQuestion(){
+db.ref("live/paused").set(true);
+}
+
+// 🎬 animatie butoane admin
 document.querySelectorAll(".btn").forEach(b=>{
 b.addEventListener("click",()=>{
-b.style.transform="scale(0.92)";
-setTimeout(()=>{b.style.transform="scale(1)"},120);
+b.style.transform="scale(0.9)";
+setTimeout(()=>b.style.transform="scale(1)",120);
 });
 });
 
