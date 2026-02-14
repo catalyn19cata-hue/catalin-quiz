@@ -9,7 +9,7 @@
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Arial;
 background-image:url("img1.jpeg");
 background-size:cover;
 background-position:center;
@@ -20,26 +20,18 @@ align-items:center;
 }
 
 .container{
-width:350px;
-padding:30px;
+width:90%;
+max-width:350px;
+padding:25px;
 border-radius:25px;
 text-align:center;
-
-background:linear-gradient(
-135deg,
-rgba(0,80,255,0.12),
-rgba(0,0,60,0.08)
-);
-
+background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
-
-box-shadow:
-0 0 0 1px rgba(255,255,255,0.2),
-0 20px 40px rgba(0,0,0,0.4);
 }
 
 h2{color:white;}
+.result{color:white;margin-top:10px;}
 
 .btn{
 display:block;
@@ -50,13 +42,7 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.2s;
-}
-
-.result{
-color:white;
-margin-top:20px;
-font-size:18px;
+transition:.15s;
 }
 
 </style>
@@ -65,12 +51,9 @@ font-size:18px;
 <body>
 
 <div class="container">
-
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
 <h3 id="timer" style="color:white;"></h3>
-
 <div id="result" class="result"></div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -90,9 +73,6 @@ const db=firebase.database();
 
 function vote(opt){
 
-const dataCache=window.liveData||{};
-if(dataCache.timer<=0) return;
-
 const q=document.getElementById("question").innerText;
 if(localStorage.getItem("voted_"+q)) return;
 
@@ -107,12 +87,9 @@ db.ref("live").on("value",snap=>{
 const data=snap.val();
 if(!data) return;
 
-window.liveData=data;
+question.innerText=data.question||"";
+timer.innerText=data.timer?("Timp rămas: "+data.timer+" sec"):"";
 
-document.getElementById("question").innerText=data.question||"";
-document.getElementById("timer").innerText=data.timer?("Timp rămas: "+data.timer+" sec"):"";
-
-const container=document.querySelector(".container");
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
 const opt=data.options||{};
@@ -126,13 +103,18 @@ btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
 
-btn.onclick=()=>vote(k);
+btn.onclick=()=>{
+vote(k);
+btn.style.transform="scale(0.9)";
+setTimeout(()=>btn.style.transform="scale(1)",120);
+};
 
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
-container.insertBefore(btn,document.getElementById("result"));
+document.querySelector(".container").insertBefore(btn,result);
+
 });
 
 let total=0;
@@ -144,7 +126,7 @@ let p=total?Math.round((votes[k]||0)*100/total):0;
 txt+=k+": "+p+"% | ";
 });
 
-document.getElementById("result").innerText=txt;
+result.innerText=txt;
 
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
@@ -157,6 +139,5 @@ b.style.background="linear-gradient(90deg,#00c853,#00e676)";
 });
 
 </script>
-
 </body>
 </html>
