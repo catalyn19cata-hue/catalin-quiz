@@ -136,21 +136,31 @@ correct:document.getElementById("correct").value
 
 renderPlaylist();
 
-// 🔥 goleste campurile
+// 🔥 golire automata campuri
 document.getElementById("q").value="";
 document.getElementById("a").value="";
 document.getElementById("b").value="";
 document.getElementById("c").value="";
 }
 
-// 👁️ PREVIEW — functioneaza indiferent de reset/stop
+// 👁️ PREVIEW — complet independent de live state
 function preview(){
-if(!playlist[currentIndex]) return;
-alert(playlist[currentIndex].question);
+
+if(!playlist.length){
+alert("Nu există întrebări.");
+return;
+}
+
+// daca ai dat NEXT deja, preview arata intrebarea anterioara
+let indexToPreview=currentIndex>0?currentIndex-1:0;
+
+alert(playlist[indexToPreview].question);
 }
 
 // ▶️ NEXT + TIMER AUTO
 function send(){
+
+if(!playlist[currentIndex]) return;
 
 const q=playlist[currentIndex];
 
@@ -193,7 +203,7 @@ function stopQuestion(){
 db.ref("live/paused").set(true);
 }
 
-// ✨ bounce effect admin
+// ✨ bounce effect
 document.querySelectorAll(".btn").forEach(b=>{
 b.addEventListener("click",()=>{
 b.style.transform="scale(0.9)";
@@ -205,5 +215,3 @@ setTimeout(()=>b.style.transform="scale(1)",120);
 
 </body>
 </html>
-🧠 Ce ai ACUM exact
-👁️ Previ
