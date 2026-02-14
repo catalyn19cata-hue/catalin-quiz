@@ -20,23 +20,25 @@ align-items:center;
 }
 
 .container{
-width:400px;
-padding:30px;
+width:90%;
+max-width:420px;
+padding:25px;
 border-radius:25px;
 text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.15),rgba(0,0,60,0.1));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
-display:none; /* 👈 ascuns pana la login */
+display:none;
 }
 
 .loginBox{
-width:320px;
+position:relative;
+z-index:9999;
+width:300px;
 padding:25px;
 border-radius:20px;
-background:rgba(0,0,0,0.5);
-backdrop-filter:blur(15px);
+background:rgba(0,0,40,0.6);
 text-align:center;
 }
 
@@ -58,19 +60,15 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.2s;
-}
-
-.btn:hover{
-transform:translateY(-2px) scale(1.03);
 }
 
 .playlist{
 color:white;
 text-align:left;
-margin-top:15px;
+margin-top:10px;
 max-height:120px;
 overflow:auto;
+font-size:14px;
 }
 
 </style>
@@ -78,15 +76,13 @@ overflow:auto;
 
 <body>
 
-<!-- 🔐 LOGIN -->
-<div id="login" class="loginBox">
+<div class="loginBox" id="loginBox">
 <h3 style="color:white;">🔐 Admin Login</h3>
-<input id="pass" placeholder="Parola admin">
+<input id="pass" type="password" placeholder="Parola admin">
 <button class="btn" onclick="login()">Intră</button>
 </div>
 
-<!-- 🔥 ADMIN PANEL -->
-<div class="container" id="panel">
+<div class="container" id="adminPanel">
 
 <h2 style="color:white;">Admin Quiz Control</h2>
 
@@ -116,25 +112,7 @@ overflow:auto;
 
 <script>
 
-const ADMIN_KEY="catalin19"; // 🔐 parola ta
-
-function login(){
-
-const p=document.getElementById("pass").value;
-
-if(p===ADMIN_KEY){
-sessionStorage.setItem("admin","ok");
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-}else{
-alert("Parola greșită");
-}
-}
-
-if(sessionStorage.getItem("admin")==="ok"){
-document.getElementById("login").style.display="none";
-document.getElementById("panel").style.display="block";
-}
+const ADMIN_KEY="catalin19";
 
 const firebaseConfig={
  apiKey:"AIzaSyBa0GIcnOJO5_sRff8F4fogtrsxlpOCXE0",
@@ -145,6 +123,15 @@ const firebaseConfig={
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
+
+function login(){
+ if(document.getElementById("pass").value===ADMIN_KEY){
+   document.getElementById("loginBox").style.display="none";
+   document.getElementById("adminPanel").style.display="block";
+ }else{
+   alert("Parola greșită");
+ }
+}
 
 let playlist=[
 {question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
@@ -158,21 +145,14 @@ playlist.forEach((q,i)=>{
 div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
 });
 }
-
 renderPlaylist();
 
 function addQuestion(){
-
 playlist.push({
-question:document.getElementById("q").value,
-options:{
-A:document.getElementById("a").value,
-B:document.getElementById("b").value,
-C:document.getElementById("c").value
-},
-correct:document.getElementById("correct").value
+question:q.value,
+options:{A:a.value,B:b.value,C:c.value},
+correct:correct.value
 });
-
 renderPlaylist();
 }
 
@@ -200,9 +180,7 @@ if(currentIndex>=playlist.length) currentIndex=0;
 }
 
 function startTimer(){
-
 let t=20;
-
 const interval=setInterval(()=>{
 if(t<0){clearInterval(interval);return;}
 db.ref("live/timer").set(t);
@@ -211,12 +189,12 @@ t--;
 }
 
 function resetLive(){
-
 db.ref("live").set({
 question:"Așteaptă următoarea întrebare...",
 timer:0,
-votes:{},
-options:{}
+votes:{A:0,B:0,C:0},
+options:{A:"-",B:"-",C:"-"},
+lastClick:""
 });
 }
 
