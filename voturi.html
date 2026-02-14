@@ -6,26 +6,40 @@
 <title>Quiz Live</title>
 
 <style>
+
 body{
 margin:0;
-font-family:Arial;
-background:#020617;
+font-family:Arial, sans-serif;
+background-image:url("img1.jpeg");
+background-size:cover;
+background-position:center;
+min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-min-height:100vh;
 }
 
 .container{
-width:90%;
-max-width:350px;
-padding:25px;
+width:350px;
+padding:30px;
 border-radius:25px;
 text-align:center;
-background:rgba(20,30,60,0.6);
-backdrop-filter:blur(20px);
+
+background:linear-gradient(
+135deg,
+rgba(0,80,255,0.12),
+rgba(0,0,60,0.08)
+);
+
+backdrop-filter:blur(18px);
 border:1px solid #66ccff;
+
+box-shadow:
+0 0 0 1px rgba(255,255,255,0.2),
+0 20px 40px rgba(0,0,0,0.4);
 }
+
+h2{color:white;}
 
 .btn{
 display:block;
@@ -36,19 +50,27 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.15s;
+transition:0.2s;
 }
 
-.result{color:white;margin-top:15px;}
+.result{
+color:white;
+margin-top:20px;
+font-size:18px;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
-<h2 id="question" style="color:white;">Așteaptă următoarea întrebare...</h2>
+
+<h2 id="question">Așteaptă următoarea întrebare...</h2>
 <h3 id="timer" style="color:white;"></h3>
+
 <div id="result" class="result"></div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -72,7 +94,6 @@ const dataCache=window.liveData||{};
 if(dataCache.timer<=0) return;
 
 const q=document.getElementById("question").innerText;
-
 if(localStorage.getItem("voted_"+q)) return;
 
 localStorage.setItem("voted_"+q,"yes");
@@ -105,14 +126,10 @@ btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
 
-btn.onclick=()=>{
- vote(k);
- btn.style.transform="scale(0.9)";
- setTimeout(()=>btn.style.transform="scale(1)",120);
-};
+btn.onclick=()=>vote(k);
 
 if(last===k){
- btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
 container.insertBefore(btn,document.getElementById("result"));
@@ -131,14 +148,15 @@ document.getElementById("result").innerText=txt;
 
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
- if(b.dataset.key===data.correct){
-   b.style.background="linear-gradient(90deg,#00c853,#00e676)";
- }
+if(b.dataset.key===data.correct){
+b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+}
 });
 }
 
 });
 
 </script>
+
 </body>
 </html>
