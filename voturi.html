@@ -17,7 +17,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
-
 .container{
 width:350px;
 padding:30px;
@@ -27,9 +26,7 @@ background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 }
-
 h2,h3{color:white;}
-
 .btn{
 display:block;
 margin:10px 0;
@@ -40,7 +37,6 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
-
 .result{
 color:white;
 margin-top:15px;
@@ -72,10 +68,15 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
+let localTimerInterval=null;
+
 function vote(opt){
 
-const data=window.liveData||{};
+const data = window.liveData || {};
 if(!data.endTime || data.paused) return;
+
+const remaining=Math.floor((data.endTime-Date.now())/1000);
+if(remaining<=0) return;
 
 const voteKey="voted_"+btoa(data.question||"");
 if(localStorage.getItem(voteKey)) return;
@@ -96,26 +97,33 @@ window.liveData=data;
 const container=document.querySelector(".container");
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
+if(localTimerInterval) clearInterval(localTimerInterval);
+
+localTimerInterval=setInterval(()=>{
+
+if(!window.liveData || !window.liveData.endTime){
+timer.innerText="";
+return;
+}
+
+const r=Math.max(0,Math.floor((window.liveData.endTime-Date.now())/1000));
+timer.innerText="Timp rămas: "+r+" sec";
+
+},250);
+
 if(data.finished){
 question.innerText="Final";
-timer.innerText="";
 result.innerText="";
 return;
 }
 
 if(data.paused){
 question.innerText="Așteaptă următoarea întrebare...";
-timer.innerText="";
 result.innerText="";
 return;
 }
 
 question.innerText=data.question||"";
-
-if(data.endTime){
-const r=Math.max(0,Math.floor((data.endTime-Date.now())/1000));
-timer.innerText="Timp rămas: "+r+" sec";
-}
 
 const opt=data.options||{};
 const votes=data.votes||{};
