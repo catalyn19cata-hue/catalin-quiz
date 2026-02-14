@@ -129,28 +129,27 @@ let timerInterval=null;
 
 const playlistDiv=document.getElementById("playlist");
 
-// 🔥 CITESTE PLAYLIST GLOBAL (nu mai dispare UI)
+
+// 🔥 PLAYLIST GLOBAL
 db.ref("playlist").on("value",snap=>{
-const data=snap.val();
-
-if(data){
-playlist=data;
-}else{
-playlist=[]; // doar daca chiar nu exista nimic
-}
-
+playlist = snap.val() || [];
 renderPlaylist();
 });
 
 function renderPlaylist(){
 playlistDiv.innerHTML="";
 playlist.forEach((q,i)=>{
-playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct}) 
+playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct})
 <span class="del" onclick="deleteQuestion(${i})">❌</span><br>`;
 });
 }
 
 function addQuestion(){
+
+if(!q.value || !a.value || !b.value || !c.value){
+alert("Completează toate câmpurile.");
+return;
+}
 
 const newQ={
 question:q.value,
@@ -160,8 +159,10 @@ correct:correct.value
 
 playlist.push(newQ);
 
-// 🔥 SALVARE GLOBALA
-db.ref("playlist").set(playlist);
+// 🔥 scriere sigură în Firebase
+db.ref("playlist").set(playlist)
+.then(()=>console.log("Salvat OK"))
+.catch(err=>console.error(err));
 
 q.value=a.value=b.value=c.value="";
 }
@@ -179,7 +180,7 @@ alert(playlist[playlist.length-1].question);
 function send(){
 
 if(!playlist[currentIndex]){
-alert("Nu ai întrebări în playlist.");
+alert("Nu mai sunt întrebări în playlist.");
 return;
 }
 
