@@ -2,19 +2,23 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiz Live</title>
 
 <style>
+
 body{
 margin:0;
-font-family:Arial;
+font-family:Arial, sans-serif;
 background-image:url("img1.jpeg");
 background-size:cover;
+background-position:center;
+min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-min-height:100vh;
 }
+
 .container{
 width:350px;
 padding:30px;
@@ -23,7 +27,11 @@ text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
+box-shadow:
+0 0 0 1px rgba(255,255,255,0.2),
+0 20px 40px rgba(0,0,0,0.4);
 }
+
 h2{color:white;}
 
 .btn{
@@ -38,7 +46,12 @@ cursor:pointer;
 transition:0.15s ease;
 }
 
-.result{color:white;margin-top:20px;font-size:18px;}
+.result{
+color:white;
+margin-top:20px;
+font-size:18px;
+}
+
 </style>
 </head>
 
@@ -57,6 +70,7 @@ transition:0.15s ease;
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+
 const firebaseConfig={
  apiKey:"APIKEYUL_TAU",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
@@ -68,61 +82,78 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
 function vote(opt){
+
  db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
+
+ // 🔥 salvam ultima apasare pentru toti
+ db.ref("live/lastClick").set(opt);
 }
 
 db.ref("live").on("value",snap=>{
 
- const data=snap.val();
- if(!data) return;
+const data=snap.val();
+if(!data) return;
 
- document.getElementById("question").innerText=data.question;
- document.getElementById("timer").innerText="Timp rămas: "+data.timer+" sec";
+document.getElementById("question").innerText=data.question||"Așteaptă următoarea întrebare...";
+document.getElementById("timer").innerText=data.timer?("Timp rămas: "+data.timer+" sec"):"";
 
- const container=document.querySelector(".container");
+const container=document.querySelector(".container");
 
- document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+// stergem butoane vechi
+document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
- const opt=data.options||{};
- const votes=data.votes||{};
+const opt=data.options||{};
+const votes=data.votes||{};
 
- Object.keys(opt).forEach(k=>{
-   const btn=document.createElement("button");
-   btn.className="btn dynamic";
-   btn.innerText=opt[k];
-   btn.dataset.key=k;
+// 🔥 generam butoane live
+Object.keys(opt).forEach(k=>{
 
-   btn.onclick=()=>{
-     vote(k);
-     btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
-     btn.style.transform="scale(0.92)";
-     setTimeout(()=>btn.style.transform="scale(1)",120);
-   };
+const btn=document.createElement("button");
+btn.className="btn dynamic";
+btn.innerText=opt[k];
+btn.dataset.key=k;
 
-   container.insertBefore(btn,document.getElementById("result"));
- });
+btn.onclick=()=>{
+ vote(k);
 
- let total=0;
- Object.values(votes).forEach(v=>total+=v);
+ // animatie mica
+ btn.style.transform="scale(0.9)";
+ setTimeout(()=>btn.style.transform="scale(1)",120);
+};
 
- let txt="";
- Object.keys(opt).forEach(k=>{
-   let p=total?Math.round((votes[k]||0)*100/total):0;
-   txt+=k+": "+p+"% | ";
- });
+// 💜 daca cineva a apasat ultima data
+if(data.lastClick===k){
+ btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+}
 
- document.getElementById("result").innerText=txt;
-
- if(data.timer<=0 && data.correct){
-  document.querySelectorAll(".dynamic").forEach(b=>{
-    if(b.dataset.key===data.correct){
-      b.style.background="linear-gradient(90deg,#00c853,#00e676)";
-      b.style.border="2px solid #00ff95";
-    }
-  });
- }
+container.insertBefore(btn,document.getElementById("result"));
 
 });
+
+// 🔥 procente live
+let total=0;
+Object.values(votes).forEach(v=>total+=v);
+
+let txt="";
+Object.keys(opt).forEach(k=>{
+let p=total?Math.round((votes[k]||0)*100/total):0;
+txt+=k+": "+p+"% | ";
+});
+
+document.getElementById("result").innerText=txt;
+
+// 🟢 raspuns corect la final timer
+if(data.timer<=0 && data.correct){
+document.querySelectorAll(".dynamic").forEach(b=>{
+ if(b.dataset.key===data.correct){
+   b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+   b.style.border="2px solid #00ff95";
+ }
+});
+}
+
+});
+
 </script>
 
 </body>
