@@ -17,7 +17,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
-
 .container{
 width:420px;
 padding:30px;
@@ -28,7 +27,6 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
-
 input,select{
 width:90%;
 padding:12px;
@@ -36,7 +34,6 @@ border-radius:10px;
 border:none;
 margin-bottom:10px;
 }
-
 .btn{
 display:block;
 width:100%;
@@ -48,7 +45,6 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
-
 .playlist{
 color:white;
 text-align:left;
@@ -56,14 +52,12 @@ margin-top:15px;
 max-height:160px;
 overflow:auto;
 }
-
 .del{
 color:red;
 cursor:pointer;
 margin-left:8px;
 font-weight:bold;
 }
-
 .liveBox{
 margin-top:20px;
 padding:15px;
@@ -93,17 +87,14 @@ text-align:left;
 </select>
 
 <button class="btn" onclick="addQuestion()">➕ Adaugă</button>
-<button class="btn" onclick="preview()">👁️ Preview</button>
 <button class="btn" onclick="send()">▶️ NEXT</button>
 <button class="btn" onclick="resetLive()">🔄 RESET</button>
-<button class="btn" onclick="stopQuestion()">⛔ Pauza</button>
 
 <div id="playlist" class="playlist"></div>
 
 <div class="liveBox">
 <b>LIVE:</b>
 <div id="liveQuestion"></div>
-<div id="liveCorrect"></div>
 <div id="liveTimer"></div>
 </div>
 
@@ -114,64 +105,56 @@ text-align:left;
 
 <script>
 
-// 🔐 PAROLA ADMIN
 if(prompt("Introdu parola admin:")!=="catalin19"){
 document.body.innerHTML="<h1 style='color:white;text-align:center;margin-top:40vh;'>Acces interzis</h1>";
 throw new Error("Parola gresita");
 }
 
 const firebaseConfig={
- apiKey:"APIKEYUL_TAU",
- authDomain:"web-quiz-3eea6.firebaseapp.com",
- databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
- projectId:"web-quiz-3eea6"
+apiKey:"APIKEYUL_TAU",
+authDomain:"web-quiz-3eea6.firebaseapp.com",
+databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
+projectId:"web-quiz-3eea6"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let playlist=JSON.parse(localStorage.getItem("quiz_playlist"))||[];
+let playlist=[];
 let currentIndex=0;
 let timerInterval=null;
 
-function savePlaylist(){
-localStorage.setItem("quiz_playlist",JSON.stringify(playlist));
-}
+const playlistDiv=document.getElementById("playlist");
+
+// 🔥 PLAYLIST GLOBAL DIN FIREBASE
+db.ref("playlist").on("value",snap=>{
+playlist=snap.val() || [];
+renderPlaylist();
+});
 
 function renderPlaylist(){
 playlistDiv.innerHTML="";
 playlist.forEach((q,i)=>{
-playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct})
-<span class="del" onclick="deleteQuestion(${i})">❌</span><br>`;
+playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct})<br>`;
 });
 }
 
-const playlistDiv=document.getElementById("playlist");
-renderPlaylist();
-
-function deleteQuestion(i){
-playlist.splice(i,1);
-savePlaylist();
-renderPlaylist();
-}
-
+// 🔥 ADAUGA INTREBARE GLOBAL
 function addQuestion(){
-playlist.push({
+
+const newQ={
 question:q.value,
 options:{A:a.value,B:b.value,C:c.value},
 correct:correct.value
-});
-savePlaylist();
-renderPlaylist();
+};
+
+playlist.push(newQ);
+db.ref("playlist").set(playlist);
+
 q.value=a.value=b.value=c.value="";
 }
 
-function preview(){
-if(!playlist.length){alert("Nu există întrebări.");return;}
-alert(playlist[playlist.length-1].question);
-}
-
-// 🔥 TIMER NUMERIC STABIL
+// 🔥 NEXT FUNCTIONAL GLOBAL
 function send(){
 
 if(!playlist[currentIndex]) return;
@@ -185,33 +168,17 @@ question:qObj.question,
 options:qObj.options,
 correct:qObj.correct,
 timer:20,
+timerStart:Date.now(),
 paused:false,
 votes:{A:0,B:0,C:0},
-lastClick:"",
 finished:false
 });
 
 let t=20;
-
 timerInterval=setInterval(()=>{
-
-db.ref("live/paused").once("value").then(s=>{
-
-if(s.val()){
-clearInterval(timerInterval);
-return;
-}
-
-if(t<0){
-clearInterval(timerInterval);
-return;
-}
-
 db.ref("live/timer").set(t);
 t--;
-
-});
-
+if(t<0) clearInterval(timerInterval);
 },1000);
 
 currentIndex++;
@@ -220,28 +187,16 @@ currentIndex++;
 function resetLive(){
 currentIndex=0;
 db.ref("live").set({
-question:"Așteaptă următoarea întrebare...",
-timer:0,
 paused:true,
 finished:false
 });
 }
 
-function stopQuestion(){
-db.ref("live/paused").set(true);
-if(currentIndex>=playlist.length){
-db.ref("live/finished").set(true);
-}
-}
-
-// LIVE VIEW
 db.ref("live").on("value",snap=>{
 const data=snap.val();
 if(!data) return;
-
 liveQuestion.innerText="Întrebare: "+(data.question||"");
-liveCorrect.innerText=data.correct?"Corect: "+data.correct:"";
-liveTimer.innerText=data.timer>=0?"Timer: "+data.timer+" sec":"";
+liveTimer.innerText=data.timer>=0?"Timer: "+data.timer:"";
 });
 
 </script>
