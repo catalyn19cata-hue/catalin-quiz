@@ -36,7 +36,7 @@ border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
 
-input{
+input,select{
 width:90%;
 padding:12px;
 border-radius:10px;
@@ -54,6 +54,11 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
+transition:0.2s;
+}
+
+.btn:hover{
+transform:translateY(-2px) scale(1.03);
 }
 
 .playlist{
@@ -77,13 +82,18 @@ overflow:auto;
 <input id="a" placeholder="Varianta A">
 <input id="b" placeholder="Varianta B">
 <input id="c" placeholder="Varianta C">
-<input id="correct" placeholder="Răspuns corect (A/B/C)">
 
-<button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
-<button class="btn" onclick="preview()">Preview</button>
-<button class="btn" onclick="send()">Send LIVE</button>
-<button class="btn" onclick="startTimer()">Start Timer</button>
-<button class="btn" onclick="resetLive()">Reset</button>
+<select id="correct">
+<option value="A">Răspuns corect: A</option>
+<option value="B">Răspuns corect: B</option>
+<option value="C">Răspuns corect: C</option>
+</select>
+
+<button class="btn" onclick="addQuestion()">➕ Adaugă în playlist</button>
+<button class="btn" onclick="preview()">👁️ Preview</button>
+<button class="btn" onclick="send()">▶️ NEXT LIVE</button>
+<button class="btn" onclick="startTimer()">⏱️ Start Timer</button>
+<button class="btn" onclick="resetLive()">🔄 Reset</button>
 
 <div id="playlist" class="playlist"></div>
 
@@ -117,7 +127,7 @@ const div=document.getElementById("playlist");
 div.innerHTML="";
 
 playlist.forEach((q,i)=>{
-div.innerHTML+= (i+1)+". "+q.question+" ("+q.correct+")<br>";
+div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
 });
 }
 
