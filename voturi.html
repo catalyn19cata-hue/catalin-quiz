@@ -73,16 +73,12 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
 let liveData=null;
-let localTimerInterval=null;
 
 function vote(opt){
 
 if(!liveData) return;
 if(liveData.paused) return;
-if(!liveData.endTime) return;
-
-const remaining=(liveData.endTime-Date.now())/1000;
-if(remaining<=0) return;
+if(liveData.timer<=0) return;
 
 const voteKey="voted_"+btoa(liveData.question||"");
 if(localStorage.getItem(voteKey)) return;
@@ -103,51 +99,22 @@ liveData=data;
 const container=document.querySelector(".container");
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
-// 🔥 TIMER LOCAL + COLORARE CORECTA
-if(localTimerInterval) clearInterval(localTimerInterval);
-
-localTimerInterval=setInterval(()=>{
-
-if(!liveData || !liveData.endTime){
-timer.innerText="";
-return;
-}
-
-const remaining=Math.max(0,
-Math.floor((liveData.endTime-Date.now())/1000)
-);
-
-timer.innerText="Timp rămas: "+remaining+" sec";
-
-// 🔥 AICI COLORAM VERDE DUPA EXPIRARE
-if(remaining<=0 && liveData.correct){
-
-document.querySelectorAll(".dynamic").forEach(b=>{
-if(b.dataset.key===liveData.correct){
-b.style.background="linear-gradient(90deg,#00c853,#00e676)";
-}
-});
-
-}
-
-},200);
-
-// 🔴 FINAL
 if(data.finished){
 question.innerText="Final";
+timer.innerText="";
 result.innerText="";
 return;
 }
 
-// 🔴 PAUZA
 if(data.paused){
 question.innerText="Așteaptă următoarea întrebare...";
+timer.innerText="";
 result.innerText="";
 return;
 }
 
-// 🔥 INTREBARE
 question.innerText=data.question||"";
+timer.innerText="Timp rămas: "+data.timer+" sec";
 
 const opt=data.options||{};
 const votes=data.votes||{};
@@ -159,7 +126,6 @@ const btn=document.createElement("button");
 btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
-
 btn.onclick=()=>vote(k);
 
 if(last===k){
@@ -170,12 +136,20 @@ container.insertBefore(btn,result);
 
 });
 
-// 🔥 VOTURI
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
 });
 result.innerText=txt;
+
+// 🔥 VERDE DUPA TIMER
+if(data.timer<=0 && data.correct){
+document.querySelectorAll(".dynamic").forEach(b=>{
+if(b.dataset.key===data.correct){
+b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+}
+});
+}
 
 });
 
