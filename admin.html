@@ -6,7 +6,6 @@
 <title>Admin Control</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Jumble;
@@ -48,7 +47,6 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.15s ease;
 }
 
 .playlist{
@@ -58,7 +56,6 @@ margin-top:15px;
 max-height:140px;
 overflow:auto;
 }
-
 </style>
 </head>
 
@@ -110,6 +107,8 @@ let playlist=[
 ];
 
 let currentIndex=0;
+let lastSentIndex=null;
+let timerInterval=null;
 
 function renderPlaylist(){
 const div=document.getElementById("playlist");
@@ -118,12 +117,9 @@ playlist.forEach((q,i)=>{
 div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
 });
 }
-
 renderPlaylist();
 
-// ➕ ADD
 function addQuestion(){
-
 playlist.push({
 question:document.getElementById("q").value,
 options:{
@@ -136,31 +132,29 @@ correct:document.getElementById("correct").value
 
 renderPlaylist();
 
-// 🔥 golire automata campuri
 document.getElementById("q").value="";
 document.getElementById("a").value="";
 document.getElementById("b").value="";
 document.getElementById("c").value="";
 }
 
-// 👁️ PREVIEW — complet independent de live state
+// 👁️ PREVIEW — arată ultima întrebare live
 function preview(){
 
-if(!playlist.length){
-alert("Nu există întrebări.");
+if(lastSentIndex===null){
+alert("Nu există întrebări trimise încă.");
 return;
 }
 
-// daca ai dat NEXT deja, preview arata intrebarea anterioara
-let indexToPreview=currentIndex>0?currentIndex-1:0;
-
-alert(playlist[indexToPreview].question);
+alert(playlist[lastSentIndex].question);
 }
 
-// ▶️ NEXT + TIMER AUTO
+// ▶️ NEXT
 function send(){
 
 if(!playlist[currentIndex]) return;
+
+if(timerInterval) clearInterval(timerInterval);
 
 const q=playlist[currentIndex];
 
@@ -171,16 +165,25 @@ correct:q.correct,
 timer:20,
 paused:false,
 votes:{A:0,B:0,C:0},
-lastClick:""
+lastClick:"",
+finished:false
 });
 
 let t=20;
-const interval=setInterval(()=>{
-if(t<0){clearInterval(interval);return;}
+
+timerInterval=setInterval(()=>{
+
+if(t<0){
+clearInterval(timerInterval);
+return;
+}
+
 db.ref("live/timer").set(t);
 t--;
+
 },1000);
 
+lastSentIndex=currentIndex;
 currentIndex++;
 }
 
@@ -194,25 +197,24 @@ question:"Așteaptă următoarea întrebare...",
 timer:0,
 paused:true,
 votes:{},
-options:{}
+options:{},
+finished:false
 });
 }
 
-// ⛔ STOP
+// ⛔ PAUZA (FINAL)
 function stopQuestion(){
+
 db.ref("live/paused").set(true);
+
+// daca nu mai sunt intrebari -> FINAL
+if(currentIndex>=playlist.length){
+db.ref("live/finished").set(true);
 }
 
-// ✨ bounce effect
-document.querySelectorAll(".btn").forEach(b=>{
-b.addEventListener("click",()=>{
-b.style.transform="scale(0.9)";
-setTimeout(()=>b.style.transform="scale(1)",120);
-});
-});
+}
 
 </script>
 
 </body>
 </html>
-
