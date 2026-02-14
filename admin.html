@@ -53,8 +53,15 @@ cursor:pointer;
 color:white;
 text-align:left;
 margin-top:15px;
-max-height:140px;
+max-height:160px;
 overflow:auto;
+}
+
+.del{
+color:red;
+cursor:pointer;
+margin-left:8px;
+font-weight:bold;
 }
 </style>
 </head>
@@ -101,25 +108,40 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let playlist=[
-{question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
-{question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"}
-];
+let playlist=JSON.parse(localStorage.getItem("quiz_playlist"))||[];
 
 let currentIndex=0;
-let lastSentIndex=null;
+let lastSentIndex=-1;
 let timerInterval=null;
+
+function savePlaylist(){
+localStorage.setItem("quiz_playlist",JSON.stringify(playlist));
+}
 
 function renderPlaylist(){
 const div=document.getElementById("playlist");
 div.innerHTML="";
+
 playlist.forEach((q,i)=>{
-div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
+
+div.innerHTML+=`
+${i+1}. ${q.question} (${q.correct})
+<span class="del" onclick="deleteQuestion(${i})">❌</span><br>
+`;
+
 });
 }
+
 renderPlaylist();
 
+function deleteQuestion(i){
+playlist.splice(i,1);
+savePlaylist();
+renderPlaylist();
+}
+
 function addQuestion(){
+
 playlist.push({
 question:document.getElementById("q").value,
 options:{
@@ -130,6 +152,7 @@ C:document.getElementById("c").value
 correct:document.getElementById("correct").value
 });
 
+savePlaylist();
 renderPlaylist();
 
 document.getElementById("q").value="";
@@ -138,11 +161,11 @@ document.getElementById("b").value="";
 document.getElementById("c").value="";
 }
 
-// 👁️ PREVIEW — arată ultima întrebare live
+// 👁️ PREVIEW — FIX REAL
 function preview(){
 
-if(lastSentIndex===null){
-alert("Nu există întrebări trimise încă.");
+if(lastSentIndex<0){
+alert("Nu ai trimis încă nicio întrebare live.");
 return;
 }
 
@@ -202,12 +225,11 @@ finished:false
 });
 }
 
-// ⛔ PAUZA (FINAL)
+// ⛔ PAUZA
 function stopQuestion(){
 
 db.ref("live/paused").set(true);
 
-// daca nu mai sunt intrebari -> FINAL
 if(currentIndex>=playlist.length){
 db.ref("live/finished").set(true);
 }
