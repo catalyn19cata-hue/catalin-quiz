@@ -87,14 +87,17 @@ text-align:left;
 </select>
 
 <button class="btn" onclick="addQuestion()">➕ Adaugă</button>
+<button class="btn" onclick="preview()">👁️ Preview</button>
 <button class="btn" onclick="send()">▶️ NEXT</button>
 <button class="btn" onclick="resetLive()">🔄 RESET</button>
+<button class="btn" onclick="stopQuestion()">⛔ Pauza</button>
 
 <div id="playlist" class="playlist"></div>
 
 <div class="liveBox">
 <b>LIVE:</b>
 <div id="liveQuestion"></div>
+<div id="liveCorrect"></div>
 <div id="liveTimer"></div>
 </div>
 
@@ -126,20 +129,20 @@ let timerInterval=null;
 
 const playlistDiv=document.getElementById("playlist");
 
-// 🔥 PLAYLIST GLOBAL DIN FIREBASE
+// 🔥 PLAYLIST GLOBAL (SINCRONIZAT)
 db.ref("playlist").on("value",snap=>{
-playlist=snap.val() || [];
+playlist=snap.val()||[];
 renderPlaylist();
 });
 
 function renderPlaylist(){
 playlistDiv.innerHTML="";
 playlist.forEach((q,i)=>{
-playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct})<br>`;
+playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct}) 
+<span class="del" onclick="deleteQuestion(${i})">❌</span><br>`;
 });
 }
 
-// 🔥 ADAUGA INTREBARE GLOBAL
 function addQuestion(){
 
 const newQ={
@@ -154,7 +157,16 @@ db.ref("playlist").set(playlist);
 q.value=a.value=b.value=c.value="";
 }
 
-// 🔥 NEXT FUNCTIONAL GLOBAL
+function deleteQuestion(i){
+playlist.splice(i,1);
+db.ref("playlist").set(playlist);
+}
+
+function preview(){
+if(!playlist.length){alert("Nu există întrebări.");return;}
+alert(playlist[playlist.length-1].question);
+}
+
 function send(){
 
 if(!playlist[currentIndex]) return;
@@ -192,11 +204,20 @@ finished:false
 });
 }
 
+function stopQuestion(){
+db.ref("live/paused").set(true);
+if(currentIndex>=playlist.length){
+db.ref("live/finished").set(true);
+}
+}
+
+// LIVE VIEW ADMIN
 db.ref("live").on("value",snap=>{
 const data=snap.val();
 if(!data) return;
 liveQuestion.innerText="Întrebare: "+(data.question||"");
-liveTimer.innerText=data.timer>=0?"Timer: "+data.timer:"";
+liveCorrect.innerText=data.correct?"Corect: "+data.correct:"";
+liveTimer.innerText=data.timer>=0?"Timer: "+data.timer+" sec":"";
 });
 
 </script>
