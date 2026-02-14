@@ -77,9 +77,16 @@ let liveData=null;
 
 function vote(opt){
 
+// 🔥 daca nu exista date live
 if(!liveData) return;
+
+// 🔥 daca e pauza
 if(liveData.paused) return;
-if(liveData.timer<=0) return;
+
+// 🔥 verificare corecta timer (fixul principal)
+if(typeof liveData.timer !== "number") return;
+
+if(liveData.timer <= 0) return;
 
 // 🔥 un vot per intrebare
 const voteKey="voted_"+btoa(liveData.question||"");
@@ -91,7 +98,7 @@ localStorage.setItem(voteKey,"yes");
 // 🔥 TRIMITE VOT
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
-// 💜 COLORARE LOCALĂ (NU PUBLICĂ)
+// 💜 MOV DOAR LOCAL
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===opt){
 b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
@@ -128,9 +135,9 @@ result.innerText="";
 return;
 }
 
-// 🔥 INTREBARE
+// 🔥 AFISEAZA INTREBAREA
 question.innerText=data.question||"";
-timer.innerText="Timp rămas: "+data.timer+" sec";
+timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
 
 const opt=data.options||{};
 const votes=data.votes||{};
@@ -148,7 +155,7 @@ container.insertBefore(btn,result);
 
 });
 
-// 🔥 AFISARE VOTURI
+// 🔥 NUMAR VOTURI
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
@@ -156,7 +163,7 @@ txt+=k+": "+(votes[k]||0)+" voturi | ";
 result.innerText=txt;
 
 // 🟢 RASPUNS CORECT LA FINAL
-if(data.timer<=0 && data.correct){
+if(typeof data.timer==="number" && data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
 b.style.background="linear-gradient(90deg,#00c853,#00e676)";
