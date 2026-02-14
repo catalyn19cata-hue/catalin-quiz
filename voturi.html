@@ -52,12 +52,9 @@ font-size:18px;
 <body>
 
 <div class="container">
-
 <h3 id="timer"></h3>
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
-
 <div id="result" class="result"></div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -77,12 +74,10 @@ const db=firebase.database();
 
 function vote(opt){
 
-const dataCache=window.liveData||{};
-if(dataCache.timer<=0 || dataCache.paused) return;
+const data=window.liveData||{};
+if(!data.endTime || data.paused) return;
 
-// 🔥 un vot per intrebare (cheie stabila)
-const voteKey="voted_"+btoa(dataCache.question||"");
-
+const voteKey="voted_"+btoa(data.question||"");
 if(localStorage.getItem(voteKey)) return;
 
 localStorage.setItem(voteKey,"yes");
@@ -99,27 +94,28 @@ if(!data) return;
 window.liveData=data;
 
 const container=document.querySelector(".container");
-
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
-// 🔴 FINAL
 if(data.finished){
-document.getElementById("question").innerText="Final";
-document.getElementById("timer").innerText="";
-document.getElementById("result").innerText="";
+question.innerText="Final";
+timer.innerText="";
+result.innerText="";
 return;
 }
 
-// 🔴 PAUZA NORMALA
 if(data.paused){
-document.getElementById("question").innerText="Așteaptă următoarea întrebare...";
-document.getElementById("timer").innerText="";
-document.getElementById("result").innerText="";
+question.innerText="Așteaptă următoarea întrebare...";
+timer.innerText="";
+result.innerText="";
 return;
 }
 
-document.getElementById("question").innerText=data.question||"";
-document.getElementById("timer").innerText=(data.timer>=0?("Timp rămas: "+data.timer+" sec"):"");
+question.innerText=data.question||"";
+
+if(data.endTime){
+const r=Math.max(0,Math.floor((data.endTime-Date.now())/1000));
+timer.innerText="Timp rămas: "+r+" sec";
+}
 
 const opt=data.options||{};
 const votes=data.votes||{};
@@ -131,14 +127,13 @@ const btn=document.createElement("button");
 btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
-
 btn.onclick=()=>vote(k);
 
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
-container.insertBefore(btn,document.getElementById("result"));
+container.insertBefore(btn,result);
 
 });
 
@@ -146,11 +141,9 @@ let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
 });
+result.innerText=txt;
 
-document.getElementById("result").innerText=txt;
-
-// 🟢 corect dupa timer
-if(data.timer<=0 && data.correct){
+if(data.endTime && Date.now()>data.endTime && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
 b.style.background="linear-gradient(90deg,#00c853,#00e676)";
@@ -161,6 +154,5 @@ b.style.background="linear-gradient(90deg,#00c853,#00e676)";
 });
 
 </script>
-
 </body>
 </html>
