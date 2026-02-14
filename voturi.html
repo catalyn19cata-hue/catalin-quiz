@@ -77,16 +77,8 @@ let liveData=null;
 
 function vote(opt){
 
-// 🔥 daca nu exista date live
-if(!liveData) return;
-
-// 🔥 daca e pauza
-if(liveData.paused) return;
-
-// 🔥 verificare corecta timer (fixul principal)
-if(typeof liveData.timer !== "number") return;
-
-if(liveData.timer <= 0) return;
+// daca nu avem intrebare live sau e pauza
+if(!liveData || liveData.paused) return;
 
 // 🔥 un vot per intrebare
 const voteKey="voted_"+btoa(liveData.question||"");
@@ -98,7 +90,7 @@ localStorage.setItem(voteKey,"yes");
 // 🔥 TRIMITE VOT
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
-// 💜 MOV DOAR LOCAL
+// 💜 mov DOAR local
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===opt){
 b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
@@ -135,7 +127,7 @@ result.innerText="";
 return;
 }
 
-// 🔥 AFISEAZA INTREBAREA
+// 🔥 INTREBARE
 question.innerText=data.question||"";
 timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
 
@@ -155,7 +147,7 @@ container.insertBefore(btn,result);
 
 });
 
-// 🔥 NUMAR VOTURI
+// 🔥 AFISARE VOTURI
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
