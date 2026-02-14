@@ -2,70 +2,41 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiz Live</title>
 
 <style>
-
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background-image:url("img1.jpeg");
-    background-size:cover;
-    background-position:center;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+margin:0;
+font-family:Arial;
+background-image:url("img1.jpeg");
+background-size:cover;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
 }
-
 .container{
-    width:350px;
-    padding:30px;
-    border-radius:25px;
-    text-align:center;
-
-    background:linear-gradient(
-        135deg,
-        rgba(0,80,255,0.12),
-        rgba(0,0,60,0.08)
-    );
-
-    backdrop-filter:blur(18px);
-    border:1px solid #66ccff;
-
-    box-shadow:
-        0 0 0 1px rgba(255,255,255,0.2),
-        0 20px 40px rgba(0,0,0,0.4);
+width:350px;
+padding:30px;
+border-radius:25px;
+text-align:center;
+background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
+backdrop-filter:blur(18px);
+border:1px solid #66ccff;
 }
-
-h2{
-    color:white;
-}
-
+h2{color:white;}
 .btn{
-    display:block;
-    margin:10px 0;
-    padding:15px;
-    border-radius:40px;
-    color:white;
-    text-decoration:none;
-    background:linear-gradient(90deg,#0000FF,#0099FF);
-    border:2px solid #66ccff;
-    cursor:pointer;
-    transition:0.2s;
+display:block;
+margin:10px 0;
+padding:15px;
+border-radius:40px;
+color:white;
+background:linear-gradient(90deg,#0000FF,#0099FF);
+border:2px solid #66ccff;
+cursor:pointer;
+transition:0.2s;
 }
-
-.btn:hover{
-    transform:translateY(-2px);
-}
-
-.result{
-    color:white;
-    margin-top:20px;
-    font-size:18px;
-}
-
+.result{color:white;margin-top:20px;font-size:18px;}
 </style>
 </head>
 
@@ -76,9 +47,7 @@ h2{
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
 <h3 id="timer" style="color:white;"></h3>
 
-<!-- BUTOANELE SE GENEREAZĂ AUTOMAT DIN FIREBASE -->
-
-<div class="result" id="result"></div>
+<div id="result" class="result"></div>
 
 </div>
 
@@ -86,58 +55,67 @@ h2{
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "APIKEYUL_TAU",
-  authDomain: "web-quiz-3eea6.firebaseapp.com",
-  databaseURL: "https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "web-quiz-3eea6"
+const firebaseConfig={
+ apiKey:"APIKEYUL_TAU",
+ authDomain:"web-quiz-3eea6.firebaseapp.com",
+ databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId:"web-quiz-3eea6"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
 function vote(opt){
-   db.ref("live/votes/"+opt).transaction(v => (v||0)+1);
+ db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 }
 
-// 🔥 ASCULTĂ LIVE QUIZ
-db.ref("live").on("value", snap=>{
+db.ref("live").on("value",snap=>{
+
  const data=snap.val();
  if(!data) return;
 
  document.getElementById("question").innerText=data.question;
  document.getElementById("timer").innerText="Timp rămas: "+data.timer+" sec";
 
+ const container=document.querySelector(".container");
+
+ document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+
  const opt=data.options||{};
  const votes=data.votes||{};
 
- const container=document.querySelector(".container");
-
- // sterge variantele vechi
- document.querySelectorAll(".dynamic").forEach(e=>e.remove());
-
- // creeaza variante automat
  Object.keys(opt).forEach(k=>{
    const btn=document.createElement("button");
    btn.className="btn dynamic";
    btn.innerText=opt[k];
+   btn.dataset.key=k;
    btn.onclick=()=>vote(k);
    container.insertBefore(btn,document.getElementById("result"));
  });
 
- // calculeaza procente
  let total=0;
- Object.values(votes).forEach(v=> total+=v);
+ Object.values(votes).forEach(v=>total+=v);
 
- let text="";
-
+ let txt="";
  Object.keys(opt).forEach(k=>{
-   let val=votes[k]||0;
-   let p=total?Math.round(val*100/total):0;
-   text+=k+": "+p+"% | ";
+   let p=total?Math.round((votes[k]||0)*100/total):0;
+   txt+=k+": "+p+"% | ";
  });
 
- document.getElementById("result").innerText=text;
+ document.getElementById("result").innerText=txt;
+
+ // 🔥 highlight raspuns corect
+ if(data.timer<=0 && data.correct){
+
+  document.querySelectorAll(".dynamic").forEach(b=>{
+    if(b.dataset.key===data.correct){
+      b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+      b.style.border="2px solid #00ff95";
+    }
+  });
+
+ }
+
 });
 </script>
 
