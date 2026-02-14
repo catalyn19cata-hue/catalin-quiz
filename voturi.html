@@ -44,6 +44,11 @@ cursor:pointer;
 transition:0.15s ease;
 }
 
+.btn.locked{
+background:linear-gradient(90deg,#555,#777);
+cursor:not-allowed;
+}
+
 .result{
 color:white;
 margin-top:15px;
@@ -70,7 +75,7 @@ font-size:18px;
 <script>
 
 const firebaseConfig={
- apiKey:"APIKEYUL_TAU",
+ apiKey:"AIzaSyBa0GIcnOJO5_sRff8F4fogtrsxlpOCXE0",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
  databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
  projectId:"web-quiz-3eea6"
@@ -81,20 +86,15 @@ const db=firebase.database();
 
 function vote(opt){
 
-// 🔥 verificam daca deja a votat la intrebarea asta
 const currentQuestion=document.getElementById("question").innerText;
 
 if(localStorage.getItem("voted_"+currentQuestion)){
-   return; // deja a votat -> nu mai trimitem
+return;
 }
 
-// salvam ca a votat
 localStorage.setItem("voted_"+currentQuestion,"yes");
 
-// trimitem votul
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
-
-// culoare mov pentru toti
 db.ref("live/lastClick").set(opt);
 }
 
@@ -108,14 +108,15 @@ document.getElementById("timer").innerText=data.timer?("Timp rămas: "+data.time
 
 const container=document.querySelector(".container");
 
-// stergem butoanele vechi
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
 const opt=data.options||{};
 const votes=data.votes||{};
 const last=data.lastClick||"";
 
-// 🔥 reconstruim butoanele (identic pentru TOTI)
+const votedAlready=localStorage.getItem("voted_"+data.question);
+
+// 🔥 generam butoane
 Object.keys(opt).forEach(k=>{
 
 const btn=document.createElement("button");
@@ -123,18 +124,19 @@ btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
 
-// CLICK
+if(votedAlready){
+btn.classList.add("locked");
+}else{
 btn.onclick=()=>{
- vote(k);
-
- // mica animatie vizuala
- btn.style.transform="scale(0.9)";
- setTimeout(()=>btn.style.transform="scale(1)",120);
+vote(k);
+btn.style.transform="scale(0.9)";
+setTimeout(()=>btn.style.transform="scale(1)",120);
 };
+}
 
-// 💜 MOV GLOBAL (citit din Firebase)
+// 💜 mov global
 if(last===k){
- btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
 container.insertBefore(btn,document.getElementById("result"));
@@ -153,13 +155,13 @@ txt+=k+": "+p+"% | ";
 
 document.getElementById("result").innerText=txt;
 
-// 🟢 raspuns corect la final
+// 🟢 raspuns corect
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
- if(b.dataset.key===data.correct){
-   b.style.background="linear-gradient(90deg,#00c853,#00e676)";
-   b.style.border="2px solid #00ff95";
- }
+if(b.dataset.key===data.correct){
+b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+b.style.border="2px solid #00ff95";
+}
 });
 }
 
@@ -169,4 +171,3 @@ document.querySelectorAll(".dynamic").forEach(b=>{
 
 </body>
 </html>
-
