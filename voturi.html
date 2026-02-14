@@ -81,11 +81,21 @@ const db=firebase.database();
 
 function vote(opt){
 
- // 🔥 increment vot
- db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
+// 🔥 verificam daca deja a votat la intrebarea asta
+const currentQuestion=document.getElementById("question").innerText;
 
- // 🔥 salvam ultima optiune global
- db.ref("live/lastClick").set(opt);
+if(localStorage.getItem("voted_"+currentQuestion)){
+   return; // deja a votat -> nu mai trimitem
+}
+
+// salvam ca a votat
+localStorage.setItem("voted_"+currentQuestion,"yes");
+
+// trimitem votul
+db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
+
+// culoare mov pentru toti
+db.ref("live/lastClick").set(opt);
 }
 
 db.ref("live").on("value",snap=>{
@@ -159,3 +169,4 @@ document.querySelectorAll(".dynamic").forEach(b=>{
 
 </body>
 </html>
+
