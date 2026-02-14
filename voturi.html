@@ -83,10 +83,12 @@ function vote(opt){
 const dataCache=window.liveData||{};
 if(dataCache.timer<=0) return;
 
-const q=document.getElementById("question").innerText;
-if(localStorage.getItem("voted_"+q)) return;
+const voteKey="voted_"+dataCache.question;
 
-localStorage.setItem("voted_"+q,"yes");
+// 🔥 blocare doar pe intrebare
+if(localStorage.getItem(voteKey)) return;
+
+localStorage.setItem(voteKey,"yes");
 
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 db.ref("live/lastClick").set(opt);
@@ -99,6 +101,7 @@ if(!data) return;
 
 window.liveData=data;
 
+// 🔴 PAUZA
 if(data.paused){
 document.getElementById("question").innerText="Așteaptă următoarea întrebare...";
 document.getElementById("timer").innerText="";
@@ -126,6 +129,7 @@ btn.dataset.key=k;
 
 btn.onclick=()=>vote(k);
 
+// 💜 MOV GLOBAL
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
@@ -134,6 +138,7 @@ container.insertBefore(btn,document.getElementById("result"));
 
 });
 
+// 🔥 NUMAR VOTURI LIVE
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
@@ -141,6 +146,7 @@ txt+=k+": "+(votes[k]||0)+" voturi | ";
 
 document.getElementById("result").innerText=txt;
 
+// 🟢 raspuns corect final
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
