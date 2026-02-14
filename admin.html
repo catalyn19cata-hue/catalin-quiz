@@ -94,14 +94,12 @@ function resetVotes(){
    alert("Voturi resetate (demo)");
 }
 
-</script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 const firebaseConfig = {
-  apiKey: "https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
+  apiKey: "AIzaSyBa0GIcnOJO5_sRff8F4fogtrsxlpOCXE0",
   authDomain: "web-quiz-3eea6.firebaseapp.com",
   databaseURL: "https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "web-quiz-3eea6"
@@ -116,8 +114,11 @@ function send(){
    db.ref("quiz").set({
       question:q
    });
+
+   console.log("trimis:", q);
 }
 </script>
 </body>
 </html>
+
 
