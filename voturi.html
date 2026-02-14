@@ -9,7 +9,7 @@
 
 body{
 margin:0;
-font-family:Arial;
+font-family:Arial, sans-serif;
 background-image:url("img1.jpeg");
 background-size:cover;
 background-position:center;
@@ -27,10 +27,10 @@ text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
+box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
 
 h2{color:white;}
-h3{color:white;}
 
 .btn{
 display:block;
@@ -41,13 +41,26 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.15s;
+transition:0.15s ease;
 }
 
 .result{
 color:white;
-margin-top:15px;
+margin-top:20px;
 font-size:18px;
+}
+
+.pause{
+font-size:26px;
+color:white;
+letter-spacing:2px;
+animation:pulse 1.2s infinite;
+}
+
+@keyframes pulse{
+0%{opacity:0.5}
+50%{opacity:1}
+100%{opacity:0.5}
 }
 
 </style>
@@ -57,7 +70,7 @@ font-size:18px;
 
 <div class="container">
 
-<h3 id="timer"></h3>
+<h3 id="timer" style="color:white;"></h3>
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
 
 <div id="result" class="result"></div>
@@ -70,7 +83,7 @@ font-size:18px;
 <script>
 
 const firebaseConfig={
- apiKey:"AIzaSyBa0GIcnOJO5_sRff8F4fogtrsxlpOCXE0",
+ apiKey:"APIKEYUL_TAU",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
  databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
  projectId:"web-quiz-3eea6"
@@ -91,7 +104,6 @@ localStorage.setItem("voted_"+q,"yes");
 
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 db.ref("live/lastClick").set(opt);
-
 }
 
 db.ref("live").on("value",snap=>{
@@ -101,11 +113,18 @@ if(!data) return;
 
 window.liveData=data;
 
-question.innerText=data.question||"";
-timer.innerText=data.timer?("⏱ "+data.timer+" sec"):"";
-
 const container=document.querySelector(".container");
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+
+if(data.paused){
+document.getElementById("question").innerHTML="<span class='pause'>LIVE ÎN PAUZĂ</span>";
+document.getElementById("timer").innerText="";
+document.getElementById("result").innerText="";
+return;
+}
+
+document.getElementById("question").innerText=data.question||"";
+document.getElementById("timer").innerText=data.timer?("Timp rămas: "+data.timer+" sec"):"";
 
 const opt=data.options||{};
 const votes=data.votes||{};
@@ -119,29 +138,34 @@ btn.innerText=opt[k];
 btn.dataset.key=k;
 
 btn.onclick=()=>{
-vote(k);
-btn.style.transform="scale(0.9)";
-setTimeout(()=>btn.style.transform="scale(1)",120);
+ vote(k);
+ btn.style.transform="scale(0.9)";
+ setTimeout(()=>btn.style.transform="scale(1)",120);
 };
 
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
-container.insertBefore(btn,result);
+container.insertBefore(btn,document.getElementById("result"));
 
 });
 
-// 👥 NUMAR TOTAL VOTURI
 let total=0;
 Object.values(votes).forEach(v=>total+=v);
 
-result.innerText="👥 "+total+" persoane au votat LIVE";
+let txt="";
+Object.keys(opt).forEach(k=>{
+txt+=k+": "+(votes[k]||0)+" voturi | ";
+});
+
+document.getElementById("result").innerText=txt;
 
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
 b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+b.style.border="2px solid #00ff95";
 }
 });
 }
