@@ -72,7 +72,8 @@ const db=firebase.database();
 let liveData=null;
 
 function getVoteKey(){
-  return "voted_"+(liveData?.question || "");
+  // 🔥 cheia unica pe fiecare intrebare live
+  return "voted_"+(liveData?.timerStart || "");
 }
 
 function vote(opt){
@@ -81,16 +82,16 @@ function vote(opt){
 
   const voteKey=getVoteKey();
 
-  // 🔥 un vot per intrebare
+  // deja votat
   if(localStorage.getItem(voteKey)) return;
 
-  // 🔥 salvam varianta aleasa (A/B/C)
+  // salvam varianta aleasa
   localStorage.setItem(voteKey,opt);
 
-  // 🔥 trimite vot
+  // trimitem vot
   db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
-  // 💜 mov instant
+  // mov instant
   document.querySelectorAll(".dynamic").forEach(b=>{
     if(b.dataset.key===opt){
       b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
@@ -126,14 +127,12 @@ db.ref("live").on("value",snap=>{
     return;
   }
 
-  // intrebare
   question.innerText=data.question||"";
   timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
 
   const opt=data.options||{};
   const votes=data.votes||{};
 
-  // 🔥 ce a votat userul
   const votedOpt = localStorage.getItem(getVoteKey());
 
   Object.keys(opt).forEach(k=>{
@@ -144,10 +143,9 @@ db.ref("live").on("value",snap=>{
     btn.dataset.key=k;
     btn.onclick=()=>vote(k);
 
-    // 💜 pastreaza mov daca a votat deja
+    // daca a votat deja -> ramane mov
     if(votedOpt){
       btn.disabled=true;
-
       if(votedOpt===k){
         btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
       }
@@ -156,14 +154,13 @@ db.ref("live").on("value",snap=>{
     container.insertBefore(btn,result);
   });
 
-  // afisare voturi
   let txt="";
   Object.keys(opt).forEach(k=>{
     txt+=k+": "+(votes[k]||0)+" voturi | ";
   });
   result.innerText=txt;
 
-  // 🟢 raspuns corect cand timer = 0
+  // raspuns corect la final
   if(typeof data.timer==="number" && data.timer<=0 && data.correct){
     document.querySelectorAll(".dynamic").forEach(b=>{
       if(b.dataset.key===data.correct){
