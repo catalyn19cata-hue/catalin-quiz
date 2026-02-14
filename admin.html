@@ -25,6 +25,13 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 color:white;
 }
+input,select{
+width:90%;
+padding:12px;
+border-radius:10px;
+border:none;
+margin-bottom:10px;
+}
 .btn{
 display:block;
 width:100%;
@@ -36,7 +43,12 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
-#list{margin-top:15px;text-align:left;}
+#list{
+margin-top:15px;
+text-align:left;
+max-height:200px;
+overflow:auto;
+}
 </style>
 </head>
 
@@ -46,6 +58,18 @@ cursor:pointer;
 
 <h2>Admin Quiz Playlist</h2>
 
+<input id="q" placeholder="Întrebarea">
+<input id="a" placeholder="Varianta A">
+<input id="b" placeholder="Varianta B">
+<input id="c" placeholder="Varianta C">
+
+<select id="correct">
+<option value="A">Corect: A</option>
+<option value="B">Corect: B</option>
+<option value="C">Corect: C</option>
+</select>
+
+<button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
 <button class="btn" onclick="startLive()">START ▶</button>
 <button class="btn" onclick="next()">NEXT ▶</button>
 
@@ -67,6 +91,7 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
+// 🔥 PLAYLIST INITIAL (exemple)
 let playlist=[
 {
 question:"Capitala României?",
@@ -89,10 +114,34 @@ let index=0;
 
 renderList();
 
+function addQuestion(){
+
+ const q=document.getElementById("q").value;
+ const A=document.getElementById("a").value;
+ const B=document.getElementById("b").value;
+ const C=document.getElementById("c").value;
+ const correct=document.getElementById("correct").value;
+
+ if(!q) return;
+
+ playlist.push({
+   question:q,
+   options:{A:A,B:B,C:C},
+   correct:correct
+ });
+
+ renderList();
+
+ document.getElementById("q").value="";
+ document.getElementById("a").value="";
+ document.getElementById("b").value="";
+ document.getElementById("c").value="";
+}
+
 function renderList(){
  let txt="";
  playlist.forEach((p,i)=>{
-  txt+=(i+1)+". "+p.question+"<br>";
+   txt+=(i+1)+". "+p.question+" (corect "+p.correct+")<br>";
  });
  document.getElementById("list").innerHTML=txt;
 }
@@ -132,7 +181,6 @@ function startTimer(){
    db.ref("live/timer").set(t);
    if(t<=0) clearInterval(interval);
  },1000);
-
 }
 </script>
 
