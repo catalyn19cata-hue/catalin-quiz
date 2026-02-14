@@ -2,7 +2,6 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Playlist Control</title>
 
 <style>
@@ -11,13 +10,11 @@ margin:0;
 font-family:Jumble, sans-serif;
 background-image:url("img2.jpeg");
 background-size:cover;
-background-position:center;
-min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
+min-height:100vh;
 }
-
 .container{
 width:420px;
 padding:30px;
@@ -26,17 +23,8 @@ text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.15),rgba(0,0,60,0.1));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
-box-shadow:0 20px 40px rgba(0,0,0,0.4);
+color:white;
 }
-
-input{
-width:90%;
-padding:12px;
-border-radius:10px;
-border:none;
-margin-bottom:10px;
-}
-
 .btn{
 display:block;
 width:100%;
@@ -48,15 +36,7 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
-
-#list{
-color:white;
-font-size:14px;
-margin-top:10px;
-text-align:left;
-max-height:180px;
-overflow:auto;
-}
+#list{margin-top:15px;text-align:left;}
 </style>
 </head>
 
@@ -64,14 +44,8 @@ overflow:auto;
 
 <div class="container">
 
-<h2 style="color:white;">Admin Quiz Playlist</h2>
+<h2>Admin Quiz Playlist</h2>
 
-<input id="q" placeholder="Întrebarea">
-<input id="a" placeholder="Varianta A">
-<input id="b" placeholder="Varianta B">
-<input id="c" placeholder="Varianta C">
-
-<button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
 <button class="btn" onclick="startLive()">START ▶</button>
 <button class="btn" onclick="next()">NEXT ▶</button>
 
@@ -83,29 +57,31 @@ overflow:auto;
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = {
-  apiKey: "APIKEYUL_TAU",
-  authDomain: "web-quiz-3eea6.firebaseapp.com",
-  databaseURL: "https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "web-quiz-3eea6"
+const firebaseConfig={
+ apiKey:"APIKEYUL_TAU",
+ authDomain:"web-quiz-3eea6.firebaseapp.com",
+ databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId:"web-quiz-3eea6"
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 
-// 👑 PLAYLIST CU 3 EXEMPLE
 let playlist=[
 {
 question:"Capitala României?",
-options:{A:"București",B:"Cluj",C:"Iași"}
+options:{A:"București",B:"Cluj",C:"Iași"},
+correct:"A"
 },
 {
 question:"2+2=?",
-options:{A:"3",B:"4",C:"5"}
+options:{A:"3",B:"4",C:"5"},
+correct:"B"
 },
 {
 question:"Culoarea cerului?",
-options:{A:"Roșu",B:"Albastru",C:"Verde"}
+options:{A:"Roșu",B:"Albastru",C:"Verde"},
+correct:"B"
 }
 ];
 
@@ -113,32 +89,10 @@ let index=0;
 
 renderList();
 
-function addQuestion(){
-
- const q=document.getElementById("q").value;
- const A=document.getElementById("a").value;
- const B=document.getElementById("b").value;
- const C=document.getElementById("c").value;
-
- if(!q) return;
-
- playlist.push({
-   question:q,
-   options:{A:A,B:B,C:C}
- });
-
- renderList();
-
- document.getElementById("q").value="";
- document.getElementById("a").value="";
- document.getElementById("b").value="";
- document.getElementById("c").value="";
-}
-
 function renderList(){
  let txt="";
  playlist.forEach((p,i)=>{
-   txt+=(i+1)+". "+p.question+"<br>";
+  txt+=(i+1)+". "+p.question+"<br>";
  });
  document.getElementById("list").innerHTML=txt;
 }
@@ -161,6 +115,7 @@ function pushLive(){
  db.ref("live").set({
    question:data.question,
    options:data.options,
+   correct:data.correct,
    timer:20,
    votes:{A:0,B:0,C:0}
  });
@@ -175,9 +130,9 @@ function startTimer(){
  const interval=setInterval(()=>{
    t--;
    db.ref("live/timer").set(t);
-
    if(t<=0) clearInterval(interval);
  },1000);
+
 }
 </script>
 
