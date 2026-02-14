@@ -6,7 +6,6 @@
 <title>Admin Control</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Jumble;
@@ -65,7 +64,6 @@ margin-left:8px;
 font-weight:bold;
 }
 
-/* 🔥 LIVE VIEW */
 .liveBox{
 margin-top:20px;
 padding:15px;
@@ -75,7 +73,6 @@ color:white;
 font-size:14px;
 text-align:left;
 }
-
 </style>
 </head>
 
@@ -96,7 +93,7 @@ text-align:left;
 <option value="C">Răspuns corect: C</option>
 </select>
 
-<button class="btn" onclick="addQuestion()">➕ Adaugă în playlist</button>
+<button class="btn" onclick="addQuestion()">➕ Adaugă</button>
 <button class="btn" onclick="preview()">👁️ Preview</button>
 <button class="btn" onclick="send()">▶️ NEXT</button>
 <button class="btn" onclick="resetLive()">🔄 RESET</button>
@@ -104,7 +101,6 @@ text-align:left;
 
 <div id="playlist" class="playlist"></div>
 
-<!-- 🔥 LIVE INFO JOS -->
 <div class="liveBox">
 <b>LIVE:</b><br>
 <div id="liveQuestion">—</div>
@@ -120,15 +116,11 @@ text-align:left;
 <script>
 
 // 🔐 PAROLA
-const parola="catalin19";
-let introdusa=prompt("Introdu parola admin:");
-
-if(introdusa!==parola){
+if(prompt("Introdu parola admin:")!=="catalin19"){
 document.body.innerHTML="<h1 style='color:white;text-align:center;margin-top:40vh;'>Acces interzis</h1>";
 throw new Error("Parola gresita");
 }
 
-// 🔥 FIREBASE
 const firebaseConfig={
  apiKey:"APIKEYUL_TAU",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
@@ -139,11 +131,8 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-// 🔥 PLAYLIST SALVAT
 let playlist=JSON.parse(localStorage.getItem("quiz_playlist"))||[];
-
 let currentIndex=0;
-let timerInterval=null;
 
 function savePlaylist(){
 localStorage.setItem("quiz_playlist",JSON.stringify(playlist));
@@ -152,15 +141,11 @@ localStorage.setItem("quiz_playlist",JSON.stringify(playlist));
 function renderPlaylist(){
 const div=document.getElementById("playlist");
 div.innerHTML="";
-
 playlist.forEach((q,i)=>{
-div.innerHTML+=`
-${i+1}. ${q.question} (${q.correct})
-<span class="del" onclick="deleteQuestion(${i})">❌</span><br>
-`;
+div.innerHTML+=`${i+1}. ${q.question} (${q.correct})
+<span class="del" onclick="deleteQuestion(${i})">❌</span><br>`;
 });
 }
-
 renderPlaylist();
 
 function deleteQuestion(i){
@@ -169,123 +154,78 @@ savePlaylist();
 renderPlaylist();
 }
 
-// ➕ ADD
 function addQuestion(){
-
 playlist.push({
-question:document.getElementById("q").value,
-options:{
-A:document.getElementById("a").value,
-B:document.getElementById("b").value,
-C:document.getElementById("c").value
-},
-correct:document.getElementById("correct").value
+question:q.value,
+options:{A:a.value,B:b.value,C:c.value},
+correct:correct.value
 });
-
 savePlaylist();
 renderPlaylist();
-
-document.getElementById("q").value="";
-document.getElementById("a").value="";
-document.getElementById("b").value="";
-document.getElementById("c").value="";
+q.value=a.value=b.value=c.value="";
 }
 
-// 👁️ PREVIEW
 function preview(){
-
-if(!playlist.length){
-alert("Nu există întrebări.");
-return;
+if(!playlist.length){alert("Nu există întrebări.");return;}
+alert(playlist[playlist.length-1].question);
 }
 
-const last=playlist[playlist.length-1];
-alert(last.question);
-}
-
-// ▶️ NEXT
+// 🔥 TIMER PROFESIONAL
 function send(){
 
 if(!playlist[currentIndex]) return;
 
-if(timerInterval) clearInterval(timerInterval);
-
-const q=playlist[currentIndex];
+const qObj=playlist[currentIndex];
+const endTime=Date.now()+20000;
 
 db.ref("live").set({
-question:q.question,
-options:q.options,
-correct:q.correct,
-timer:20,
+question:qObj.question,
+options:qObj.options,
+correct:qObj.correct,
+endTime:endTime,
 paused:false,
 votes:{A:0,B:0,C:0},
 lastClick:"",
 finished:false
 });
 
-let t=20;
-
-timerInterval=setInterval(()=>{
-
-if(t<0){
-clearInterval(timerInterval);
-return;
-}
-
-db.ref("live/timer").set(t);
-t--;
-
-},1000);
-
 currentIndex++;
 }
 
-// 🔄 RESET
 function resetLive(){
-
 currentIndex=0;
-
 db.ref("live").set({
 question:"Așteaptă următoarea întrebare...",
-timer:0,
 paused:true,
-votes:{},
-options:{},
 finished:false
 });
 }
 
-// ⛔ PAUZA
 function stopQuestion(){
-
 db.ref("live/paused").set(true);
-
 if(currentIndex>=playlist.length){
 db.ref("live/finished").set(true);
 }
-
 }
 
-// 🔥 LIVE VIEW UPDATE
+// 🔥 LIVE VIEW TIMER PERFECT
 db.ref("live").on("value",snap=>{
 
 const data=snap.val();
 if(!data) return;
 
-document.getElementById("liveQuestion").innerText="Întrebare: "+(data.question||"—");
+liveQuestion.innerText="Întrebare: "+(data.question||"—");
+liveCorrect.innerText=data.correct?"Corect: "+data.correct:"";
 
-if(data.correct){
-document.getElementById("liveCorrect").innerText="Corect: "+data.correct;
+if(data.endTime){
+const r=Math.max(0,Math.floor((data.endTime-Date.now())/1000));
+liveTimer.innerText="Timer: "+r+" sec";
 }else{
-document.getElementById("liveCorrect").innerText="";
+liveTimer.innerText="";
 }
-
-document.getElementById("liveTimer").innerText=
-(data.timer>=0?"Timer: "+data.timer+" sec":"");
 
 });
 
 </script>
-
 </body>
 </html>
