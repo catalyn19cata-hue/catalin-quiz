@@ -7,41 +7,54 @@
 
 <style>
 body{
-  margin:0;
-  font-family:Arial;
-  background-image:url("img1.jpeg");
-  background-size:cover;
-  background-position:center;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+margin:0;
+font-family:Arial;
+background-image:url("img1.jpeg");
+background-size:cover;
+background-position:center;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
 }
+
+/* ⭐️ GLASS STYLE MAI OPAC */
 .container{
-  width:350px;
-  padding:30px;
-  border-radius:25px;
-  text-align:center;
-  background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
-  backdrop-filter:blur(18px);
-  border:1px solid #66ccff;
+width:350px;
+padding:30px;
+border-radius:25px;
+text-align:center;
+background:linear-gradient(
+135deg,
+rgba(0,80,255,0.08),
+rgba(0,0,60,0.05)
+);
+backdrop-filter:blur(28px);
+-webkit-backdrop-filter:blur(28px);
+border:1px solid rgba(102,204,255,0.6);
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.25),
+0 20px 40px rgba(0,0,0,0.35);
 }
+
 h2,h3{color:white;}
+
 .btn{
-  display:block;
-  margin:10px 0;
-  padding:15px;
-  border-radius:40px;
-  color:white;
-  background:linear-gradient(90deg,#0000FF,#0099FF);
-  border:2px solid #66ccff;
-  cursor:pointer;
-  transition:0.2s;
+display:block;
+margin:10px 0;
+padding:15px;
+border-radius:40px;
+color:white;
+background:linear-gradient(90deg,#0000FF,#0099FF);
+border:2px solid #66ccff;
+cursor:pointer;
+transition:0.2s;
 }
+
 .result{
-  color:white;
-  margin-top:15px;
-  font-size:18px;
+color:white;
+margin-top:15px;
+font-size:18px;
 }
 </style>
 </head>
@@ -49,9 +62,9 @@ h2,h3{color:white;}
 <body>
 
 <div class="container">
-  <h3 id="timer"></h3>
-  <h2 id="question">Așteaptă următoarea întrebare...</h2>
-  <div id="result" class="result"></div>
+<h3 id="timer"></h3>
+<h2 id="question">Așteaptă următoarea întrebare...</h2>
+<div id="result" class="result"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -60,114 +73,111 @@ h2,h3{color:white;}
 <script>
 
 const firebaseConfig={
-  apiKey:"APIKEYUL_TAU",
-  authDomain:"web-quiz-3eea6.firebaseapp.com",
-  databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:"web-quiz-3eea6"
+apiKey:"APIKEYUL_TAU",
+authDomain:"web-quiz-3eea6.firebaseapp.com",
+databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
+projectId:"web-quiz-3eea6"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
 let liveData=null;
+let lastTimerStart=null; // ⭐️ detecteaza intrebare noua
 
 function getVoteKey(){
-  // 🔥 cheia unica pe fiecare intrebare live
-  return "voted_"+(liveData?.timerStart || "");
+return "voted_"+(liveData?.timerStart || "");
 }
 
 function vote(opt){
 
-  if(!liveData || liveData.paused) return;
+if(!liveData || liveData.paused) return;
 
-  const voteKey=getVoteKey();
+const voteKey=getVoteKey();
 
-  // deja votat
-  if(localStorage.getItem(voteKey)) return;
+if(localStorage.getItem(voteKey)) return;
 
-  // salvam varianta aleasa
-  localStorage.setItem(voteKey,opt);
+localStorage.setItem(voteKey,opt);
 
-  // trimitem vot
-  db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
+db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
-  // mov instant
-  document.querySelectorAll(".dynamic").forEach(b=>{
-    if(b.dataset.key===opt){
-      b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
-    }
-  });
+document.querySelectorAll(".dynamic").forEach(b=>{
+if(b.dataset.key===opt){
+b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+}
+});
 }
 
 db.ref("live").on("value",snap=>{
 
-  const data=snap.val();
-  if(!data) return;
+const data=snap.val();
+if(!data) return;
 
-  liveData=data;
+liveData=data;
 
-  const container=document.querySelector(".container");
+const container=document.querySelector(".container");
 
-  // sterge butoane vechi
-  document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+/* ⭐️ daca e intrebare noua -> reset vizual */
+if(lastTimerStart !== data.timerStart){
+lastTimerStart = data.timerStart;
+document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+}
 
-  // FINAL
-  if(data.finished){
-    question.innerText="Final";
-    timer.innerText="";
-    result.innerText="";
-    return;
-  }
+document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
-  // PAUZA
-  if(data.paused){
-    question.innerText="Așteaptă următoarea întrebare...";
-    timer.innerText="";
-    result.innerText="";
-    return;
-  }
+if(data.finished){
+question.innerText="Final";
+timer.innerText="";
+result.innerText="";
+return;
+}
 
-  question.innerText=data.question||"";
-  timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
+if(data.paused){
+question.innerText="Așteaptă următoarea întrebare...";
+timer.innerText="";
+result.innerText="";
+return;
+}
 
-  const opt=data.options||{};
-  const votes=data.votes||{};
+question.innerText=data.question||"";
+timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
 
-  const votedOpt = localStorage.getItem(getVoteKey());
+const opt=data.options||{};
+const votes=data.votes||{};
 
-  Object.keys(opt).forEach(k=>{
+const votedOpt=localStorage.getItem(getVoteKey());
 
-    const btn=document.createElement("button");
-    btn.className="btn dynamic";
-    btn.innerText=opt[k];
-    btn.dataset.key=k;
-    btn.onclick=()=>vote(k);
+Object.keys(opt).forEach(k=>{
 
-    // daca a votat deja -> ramane mov
-    if(votedOpt){
-      btn.disabled=true;
-      if(votedOpt===k){
-        btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
-      }
-    }
+const btn=document.createElement("button");
+btn.className="btn dynamic";
+btn.innerText=opt[k];
+btn.dataset.key=k;
+btn.onclick=()=>vote(k);
 
-    container.insertBefore(btn,result);
-  });
+if(votedOpt){
+btn.disabled=true;
+if(votedOpt===k){
+btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+}
+}
 
-  let txt="";
-  Object.keys(opt).forEach(k=>{
-    txt+=k+": "+(votes[k]||0)+" voturi | ";
-  });
-  result.innerText=txt;
+container.insertBefore(btn,result);
+});
 
-  // raspuns corect la final
-  if(typeof data.timer==="number" && data.timer<=0 && data.correct){
-    document.querySelectorAll(".dynamic").forEach(b=>{
-      if(b.dataset.key===data.correct){
-        b.style.background="linear-gradient(90deg,#00c853,#00e676)";
-      }
-    });
-  }
+let txt="";
+Object.keys(opt).forEach(k=>{
+txt+=k+": "+(votes[k]||0)+" voturi | ";
+});
+result.innerText=txt;
+
+if(typeof data.timer==="number" && data.timer<=0 && data.correct){
+document.querySelectorAll(".dynamic").forEach(b=>{
+if(b.dataset.key===data.correct){
+b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+}
+});
+}
 
 });
 
