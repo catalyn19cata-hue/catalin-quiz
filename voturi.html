@@ -18,7 +18,7 @@ justify-content:center;
 align-items:center;
 }
 
-/* ⭐️ GLASS STYLE MAI OPAC */
+/* ⭐️ GLASS STYLE */
 .container{
 width:350px;
 padding:30px;
@@ -26,14 +26,14 @@ border-radius:25px;
 text-align:center;
 background:linear-gradient(
 135deg,
-rgba(0,80,255,0.08),
-rgba(0,0,60,0.05)
+rgba(0,80,255,0.07),
+rgba(0,0,60,0.04)
 );
-backdrop-filter:blur(28px);
--webkit-backdrop-filter:blur(28px);
-border:1px solid rgba(102,204,255,0.6);
+backdrop-filter:blur(30px);
+-webkit-backdrop-filter:blur(30px);
+border:1px solid rgba(102,204,255,0.5);
 box-shadow:
-inset 0 1px 0 rgba(255,255,255,0.25),
+inset 0 1px 0 rgba(255,255,255,0.2),
 0 20px 40px rgba(0,0,0,0.35);
 }
 
@@ -83,10 +83,11 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
 let liveData=null;
-let lastTimerStart=null; // ⭐️ detecteaza intrebare noua
+let lastQuestionID=null;
 
 function getVoteKey(){
-return "voted_"+(liveData?.timerStart || "");
+if(!liveData || !liveData.timerStart) return null;
+return "voted_"+liveData.timerStart;
 }
 
 function vote(opt){
@@ -94,13 +95,19 @@ function vote(opt){
 if(!liveData || liveData.paused) return;
 
 const voteKey=getVoteKey();
+if(!voteKey) return;
 
 if(localStorage.getItem(voteKey)) return;
 
 localStorage.setItem(voteKey,opt);
 
+// 🔥 vot real sincronizat
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
+paintSelected(opt);
+}
+
+function paintSelected(opt){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===opt){
 b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
@@ -117,9 +124,9 @@ liveData=data;
 
 const container=document.querySelector(".container");
 
-/* ⭐️ daca e intrebare noua -> reset vizual */
-if(lastTimerStart !== data.timerStart){
-lastTimerStart = data.timerStart;
+// ⭐️ detecteaza intrebare noua
+if(lastQuestionID !== data.timerStart){
+lastQuestionID = data.timerStart;
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 }
 
@@ -132,7 +139,7 @@ result.innerText="";
 return;
 }
 
-if(data.paused){
+if(data.paused || !data.timerStart){
 question.innerText="Așteaptă următoarea întrebare...";
 timer.innerText="";
 result.innerText="";
@@ -145,7 +152,8 @@ timer.innerText="Timp rămas: "+(data.timer ?? 0)+" sec";
 const opt=data.options||{};
 const votes=data.votes||{};
 
-const votedOpt=localStorage.getItem(getVoteKey());
+const voteKey=getVoteKey();
+const votedOpt= voteKey ? localStorage.getItem(voteKey) : null;
 
 Object.keys(opt).forEach(k=>{
 
@@ -165,12 +173,14 @@ btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 container.insertBefore(btn,result);
 });
 
+// 🔥 voturi sincronizate global
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
 });
 result.innerText=txt;
 
+// raspuns corect la final
 if(typeof data.timer==="number" && data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
