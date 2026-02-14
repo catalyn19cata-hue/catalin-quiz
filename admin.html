@@ -17,7 +17,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
-
 .container{
 width:420px;
 padding:30px;
@@ -28,7 +27,6 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
-
 input,select{
 width:90%;
 padding:12px;
@@ -36,7 +34,6 @@ border-radius:10px;
 border:none;
 margin-bottom:10px;
 }
-
 .btn{
 display:block;
 width:100%;
@@ -48,7 +45,6 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
-
 .playlist{
 color:white;
 text-align:left;
@@ -56,14 +52,7 @@ margin-top:15px;
 max-height:160px;
 overflow:auto;
 }
-
-.del{
-color:red;
-cursor:pointer;
-margin-left:8px;
-font-weight:bold;
-}
-
+.del{color:red;cursor:pointer;margin-left:8px;font-weight:bold;}
 .liveBox{
 margin-top:20px;
 padding:15px;
@@ -115,7 +104,7 @@ text-align:left;
 
 <script>
 
-// 🔐 PAROLA
+// 🔐 PAROLA ADMIN
 if(prompt("Introdu parola admin:")!=="catalin19"){
 document.body.innerHTML="<h1 style='color:white;text-align:center;margin-top:40vh;'>Acces interzis</h1>";
 throw new Error("Parola gresita");
@@ -133,19 +122,20 @@ const db=firebase.database();
 
 let playlist=JSON.parse(localStorage.getItem("quiz_playlist"))||[];
 let currentIndex=0;
+let adminTimerInterval=null;
 
 function savePlaylist(){
 localStorage.setItem("quiz_playlist",JSON.stringify(playlist));
 }
 
 function renderPlaylist(){
-const div=document.getElementById("playlist");
-div.innerHTML="";
+playlistDiv.innerHTML="";
 playlist.forEach((q,i)=>{
-div.innerHTML+=`${i+1}. ${q.question} (${q.correct})
+playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct})
 <span class="del" onclick="deleteQuestion(${i})">❌</span><br>`;
 });
 }
+const playlistDiv=document.getElementById("playlist");
 renderPlaylist();
 
 function deleteQuestion(i){
@@ -208,7 +198,7 @@ db.ref("live/finished").set(true);
 }
 }
 
-// 🔥 LIVE VIEW TIMER PERFECT
+// 🔥 LIVE VIEW TIMER
 db.ref("live").on("value",snap=>{
 
 const data=snap.val();
@@ -217,12 +207,19 @@ if(!data) return;
 liveQuestion.innerText="Întrebare: "+(data.question||"—");
 liveCorrect.innerText=data.correct?"Corect: "+data.correct:"";
 
-if(data.endTime){
+if(adminTimerInterval) clearInterval(adminTimerInterval);
+
+adminTimerInterval=setInterval(()=>{
+
+if(!data.endTime){
+liveTimer.innerText="";
+return;
+}
+
 const r=Math.max(0,Math.floor((data.endTime-Date.now())/1000));
 liveTimer.innerText="Timer: "+r+" sec";
-}else{
-liveTimer.innerText="";
-}
+
+},250);
 
 });
 
