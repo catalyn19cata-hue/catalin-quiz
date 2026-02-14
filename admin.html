@@ -74,24 +74,37 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+let interval=null;
+
 function send(){
  const q=document.getElementById("q").value;
 
  db.ref("quiz").set({
-   question:q
+   question:q,
+   timer:20,
+   votes:{A:0,B:0}
  });
-
- console.log("trimis:",q);
 }
 
 function startTimer(){
- alert("Timer demo");
+ if(interval) clearInterval(interval);
+
+ interval=setInterval(()=>{
+   db.ref("quiz/timer").once("value",snap=>{
+     let t=snap.val();
+     if(t>0){
+       db.ref("quiz").update({timer:t-1});
+     }else{
+       clearInterval(interval);
+     }
+   });
+ },1000);
 }
 
 function resetVotes(){
- alert("Reset demo");
+ db.ref("quiz/votes").set({A:0,B:0});
 }
 </script>
-
 </body>
 </html>
+
