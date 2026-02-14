@@ -20,26 +20,14 @@ align-items:center;
 }
 
 .container{
-width:90%;
-max-width:420px;
-padding:25px;
+width:400px;
+padding:30px;
 border-radius:25px;
 text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.15),rgba(0,0,60,0.1));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
-display:none;
-}
-
-.loginBox{
-position:relative;
-z-index:9999;
-width:300px;
-padding:25px;
-border-radius:20px;
-background:rgba(0,0,40,0.6);
-text-align:center;
 }
 
 input,select{
@@ -60,15 +48,15 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
+transition:0.15s ease;
 }
 
 .playlist{
 color:white;
 text-align:left;
-margin-top:10px;
+margin-top:15px;
 max-height:120px;
 overflow:auto;
-font-size:14px;
 }
 
 </style>
@@ -76,13 +64,7 @@ font-size:14px;
 
 <body>
 
-<div class="loginBox" id="loginBox">
-<h3 style="color:white;">🔐 Admin Login</h3>
-<input id="pass" type="password" placeholder="Parola admin">
-<button class="btn" onclick="login()">Intră</button>
-</div>
-
-<div class="container" id="adminPanel">
+<div class="container">
 
 <h2 style="color:white;">Admin Quiz Control</h2>
 
@@ -101,7 +83,7 @@ font-size:14px;
 <button class="btn" onclick="preview()">👁️ Preview</button>
 <button class="btn" onclick="send()">▶️ NEXT</button>
 <button class="btn" onclick="startTimer()">⏱️ Start Timer</button>
-<button class="btn" onclick="resetLive()">🔄 Reset</button>
+<button class="btn" onclick="stopQuestion()">⛔ Stop</button>
 
 <div id="playlist" class="playlist"></div>
 
@@ -112,10 +94,8 @@ font-size:14px;
 
 <script>
 
-const ADMIN_KEY="catalin19";
-
 const firebaseConfig={
- apiKey:"AIzaSyBa0GIcnOJO5_sRff8F4fogtrsxlpOCXE0",
+ apiKey:"APIKEYUL_TAU",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
  databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
  projectId:"web-quiz-3eea6"
@@ -124,19 +104,8 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-function login(){
- if(document.getElementById("pass").value===ADMIN_KEY){
-   document.getElementById("loginBox").style.display="none";
-   document.getElementById("adminPanel").style.display="block";
- }else{
-   alert("Parola greșită");
- }
-}
-
-let playlist=[
-{question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
-{question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"}
-];
+let playlist=[];
+let currentIndex=0;
 
 function renderPlaylist(){
 const div=document.getElementById("playlist");
@@ -145,28 +114,30 @@ playlist.forEach((q,i)=>{
 div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
 });
 }
-renderPlaylist();
 
 function addQuestion(){
 playlist.push({
-question:q.value,
-options:{A:a.value,B:b.value,C:c.value},
-correct:correct.value
+question:document.getElementById("q").value,
+options:{
+A:document.getElementById("a").value,
+B:document.getElementById("b").value,
+C:document.getElementById("c").value
+},
+correct:document.getElementById("correct").value
 });
 renderPlaylist();
 }
 
-let currentIndex=0;
-
 function preview(){
-alert(playlist[currentIndex].question);
+alert(playlist[currentIndex]?.question);
 }
 
 function send(){
-
 const q=playlist[currentIndex];
+if(!q) return;
 
 db.ref("live").set({
+paused:false,
 question:q.question,
 options:q.options,
 correct:q.correct,
@@ -176,7 +147,6 @@ lastClick:""
 });
 
 currentIndex++;
-if(currentIndex>=playlist.length) currentIndex=0;
 }
 
 function startTimer(){
@@ -188,35 +158,20 @@ t--;
 },1000);
 }
 
-function resetLive(){
+function stopQuestion(){
 db.ref("live").set({
-question:"Așteaptă următoarea întrebare...",
-timer:0,
-votes:{A:0,B:0,C:0},
-options:{A:"-",B:"-",C:"-"},
-lastClick:""
+paused:true
 });
 }
 
-</script>
- <script>
-
-// adauga asta la finalul codului tau admin.html
-
 document.querySelectorAll(".btn").forEach(b=>{
-
 b.addEventListener("click",()=>{
-
 b.style.transform="scale(0.92)";
-setTimeout(()=>{
-b.style.transform="scale(1)";
-},120);
-
+setTimeout(()=>{b.style.transform="scale(1)"},120);
 });
-
 });
 
 </script>
+
 </body>
 </html>
-
