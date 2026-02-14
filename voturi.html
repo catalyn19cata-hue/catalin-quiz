@@ -39,6 +39,7 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
+transition:0.2s;
 }
 
 .result{
@@ -80,13 +81,23 @@ if(!liveData) return;
 if(liveData.paused) return;
 if(liveData.timer<=0) return;
 
+// 🔥 un vot per intrebare
 const voteKey="voted_"+btoa(liveData.question||"");
+
 if(localStorage.getItem(voteKey)) return;
 
 localStorage.setItem(voteKey,"yes");
 
+// 🔥 TRIMITE VOT
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
-db.ref("live/lastClick").set(opt);
+
+// 💜 COLORARE LOCALĂ (NU PUBLICĂ)
+document.querySelectorAll(".dynamic").forEach(b=>{
+if(b.dataset.key===opt){
+b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+}
+});
+
 }
 
 db.ref("live").on("value",snap=>{
@@ -97,8 +108,11 @@ if(!data) return;
 liveData=data;
 
 const container=document.querySelector(".container");
+
+// sterge butoane vechi
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
+// 🔴 FINAL
 if(data.finished){
 question.innerText="Final";
 timer.innerText="";
@@ -106,6 +120,7 @@ result.innerText="";
 return;
 }
 
+// 🔴 PAUZA
 if(data.paused){
 question.innerText="Așteaptă următoarea întrebare...";
 timer.innerText="";
@@ -113,12 +128,12 @@ result.innerText="";
 return;
 }
 
+// 🔥 INTREBARE
 question.innerText=data.question||"";
 timer.innerText="Timp rămas: "+data.timer+" sec";
 
 const opt=data.options||{};
 const votes=data.votes||{};
-const last=data.lastClick||"";
 
 Object.keys(opt).forEach(k=>{
 
@@ -126,23 +141,21 @@ const btn=document.createElement("button");
 btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
-btn.onclick=()=>vote(k);
 
-if(last===k){
-btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
-}
+btn.onclick=()=>vote(k);
 
 container.insertBefore(btn,result);
 
 });
 
+// 🔥 AFISARE VOTURI
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
 });
 result.innerText=txt;
 
-// 🔥 VERDE DUPA TIMER
+// 🟢 RASPUNS CORECT LA FINAL
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
