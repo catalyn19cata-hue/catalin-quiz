@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Control</title>
+<title>Admin Playlist Control</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Jumble, sans-serif;
@@ -35,7 +34,7 @@ width:90%;
 padding:12px;
 border-radius:10px;
 border:none;
-margin-bottom:12px;
+margin-bottom:10px;
 }
 
 .btn{
@@ -50,6 +49,14 @@ border:2px solid #66ccff;
 cursor:pointer;
 }
 
+#list{
+color:white;
+font-size:14px;
+margin-top:10px;
+text-align:left;
+max-height:150px;
+overflow:auto;
+}
 </style>
 </head>
 
@@ -57,17 +64,18 @@ cursor:pointer;
 
 <div class="container">
 
-<h2 style="color:white;">Admin Quiz Control</h2>
+<h2 style="color:white;">Admin Quiz Playlist</h2>
 
-<input id="q" placeholder="Scrie întrebarea...">
-
+<input id="q" placeholder="Întrebarea">
 <input id="a" placeholder="Varianta A">
 <input id="b" placeholder="Varianta B">
 <input id="c" placeholder="Varianta C">
 
-<button class="btn" onclick="send()">Trimite întrebare LIVE</button>
-<button class="btn" onclick="startTimer()">Start Timer 20s</button>
-<button class="btn" onclick="resetVotes()">Reset Vote</button>
+<button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
+<button class="btn" onclick="startLive()">START ▶</button>
+<button class="btn" onclick="next()">NEXT ▶</button>
+
+<div id="list"></div>
 
 </div>
 
@@ -85,54 +93,80 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-function send(){
+let playlist=[];
+let index=0;
+
+// 🔵 adauga intrebare in lista
+function addQuestion(){
 
  const q=document.getElementById("q").value;
  const A=document.getElementById("a").value;
  const B=document.getElementById("b").value;
  const C=document.getElementById("c").value;
 
- db.ref("live").set({
+ if(!q) return;
+
+ playlist.push({
    question:q,
-   timer:0,
-   options:{
-     A:A,
-     B:B,
-     C:C
-   },
-   votes:{
-     A:0,
-     B:0,
-     C:0
-   }
+   options:{A:A,B:B,C:C}
  });
 
- console.log("Quiz LIVE trimis");
+ renderList();
+
+ document.getElementById("q").value="";
+ document.getElementById("a").value="";
+ document.getElementById("b").value="";
+ document.getElementById("c").value="";
 }
 
+// 🔵 afiseaza playlist
+function renderList(){
+ let txt="";
+ playlist.forEach((p,i)=>{
+   txt+=(i+1)+". "+p.question+"<br>";
+ });
+ document.getElementById("list").innerHTML=txt;
+}
+
+// 🔵 porneste prima intrebare
+function startLive(){
+ index=0;
+ pushLive();
+}
+
+// 🔵 trece la urmatoarea
+function next(){
+ index++;
+ if(index>=playlist.length) return alert("Ai ajuns la final");
+ pushLive();
+}
+
+// 🔥 trimite live in Firebase
+function pushLive(){
+
+ const data=playlist[index];
+
+ db.ref("live").set({
+   question:data.question,
+   options:data.options,
+   timer:20,
+   votes:{A:0,B:0,C:0}
+ });
+
+ startTimer();
+}
+
+// 🔥 timer live
 function startTimer(){
 
  let t=20;
 
  const interval=setInterval(()=>{
    t--;
-
    db.ref("live/timer").set(t);
 
    if(t<=0) clearInterval(interval);
-
  },1000);
-}
-
-function resetVotes(){
-
- db.ref("live/votes").set({
-   A:0,
-   B:0,
-   C:0
- });
-
- console.log("Votes reset");
 }
 </script>
 
