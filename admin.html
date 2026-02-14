@@ -199,5 +199,24 @@ lastClick:""
 }
 
 </script>
+ <script>
+
+// adauga asta la finalul codului tau admin.html
+
+document.querySelectorAll(".btn").forEach(b=>{
+
+b.addEventListener("click",()=>{
+
+b.style.transform="scale(0.92)";
+setTimeout(()=>{
+b.style.transform="scale(1)";
+},120);
+
+});
+
+});
+
+</script>
 </body>
 </html>
+
