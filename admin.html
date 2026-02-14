@@ -82,7 +82,7 @@ function send(){
  db.ref("quiz").set({
    question:q,
    timer:20,
-   votes:{A:0,B:0}
+   votes:{A:0,B:0,C:0}
  });
 }
 
@@ -107,4 +107,5 @@ function resetVotes(){
 </script>
 </body>
 </html>
+
 
