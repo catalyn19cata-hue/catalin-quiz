@@ -25,6 +25,7 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 }
 h2{color:white;}
+
 .btn{
 display:block;
 margin:10px 0;
@@ -34,8 +35,9 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.2s;
+transition:0.15s ease;
 }
+
 .result{color:white;margin-top:20px;font-size:18px;}
 </style>
 </head>
@@ -89,7 +91,14 @@ db.ref("live").on("value",snap=>{
    btn.className="btn dynamic";
    btn.innerText=opt[k];
    btn.dataset.key=k;
-   btn.onclick=()=>vote(k);
+
+   btn.onclick=()=>{
+     vote(k);
+     btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
+     btn.style.transform="scale(0.92)";
+     setTimeout(()=>btn.style.transform="scale(1)",120);
+   };
+
    container.insertBefore(btn,document.getElementById("result"));
  });
 
@@ -104,16 +113,13 @@ db.ref("live").on("value",snap=>{
 
  document.getElementById("result").innerText=txt;
 
- // 🔥 highlight raspuns corect
  if(data.timer<=0 && data.correct){
-
   document.querySelectorAll(".dynamic").forEach(b=>{
     if(b.dataset.key===data.correct){
       b.style.background="linear-gradient(90deg,#00c853,#00e676)";
       b.style.border="2px solid #00ff95";
     }
   });
-
  }
 
 });
