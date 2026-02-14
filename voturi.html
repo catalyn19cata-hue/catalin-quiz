@@ -6,7 +6,6 @@
 <title>Quiz Live</title>
 
 <style>
-
 body{
 margin:0;
 font-family:Arial;
@@ -40,7 +39,6 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:0.15s;
 }
 
 .result{
@@ -48,7 +46,6 @@ color:white;
 margin-top:15px;
 font-size:18px;
 }
-
 </style>
 </head>
 
@@ -81,11 +78,11 @@ const db=firebase.database();
 function vote(opt){
 
 const dataCache=window.liveData||{};
-if(dataCache.timer<=0) return;
+if(dataCache.timer<=0 || dataCache.paused) return;
 
-const voteKey="voted_"+dataCache.question;
+// 🔥 un vot per intrebare (cheie stabila)
+const voteKey="voted_"+btoa(dataCache.question||"");
 
-// 🔥 blocare doar pe intrebare
 if(localStorage.getItem(voteKey)) return;
 
 localStorage.setItem(voteKey,"yes");
@@ -101,20 +98,28 @@ if(!data) return;
 
 window.liveData=data;
 
-// 🔴 PAUZA
+const container=document.querySelector(".container");
+
+document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+
+// 🔴 FINAL
+if(data.finished){
+document.getElementById("question").innerText="Final";
+document.getElementById("timer").innerText="";
+document.getElementById("result").innerText="";
+return;
+}
+
+// 🔴 PAUZA NORMALA
 if(data.paused){
 document.getElementById("question").innerText="Așteaptă următoarea întrebare...";
 document.getElementById("timer").innerText="";
 document.getElementById("result").innerText="";
-document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 return;
 }
 
 document.getElementById("question").innerText=data.question||"";
-document.getElementById("timer").innerText=data.timer?("Timp rămas: "+data.timer+" sec"):"";
-
-const container=document.querySelector(".container");
-document.querySelectorAll(".dynamic").forEach(e=>e.remove());
+document.getElementById("timer").innerText=(data.timer>=0?("Timp rămas: "+data.timer+" sec"):"");
 
 const opt=data.options||{};
 const votes=data.votes||{};
@@ -129,7 +134,6 @@ btn.dataset.key=k;
 
 btn.onclick=()=>vote(k);
 
-// 💜 MOV GLOBAL
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
@@ -138,7 +142,6 @@ container.insertBefore(btn,document.getElementById("result"));
 
 });
 
-// 🔥 NUMAR VOTURI LIVE
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
@@ -146,7 +149,7 @@ txt+=k+": "+(votes[k]||0)+" voturi | ";
 
 document.getElementById("result").innerText=txt;
 
-// 🟢 raspuns corect final
+// 🟢 corect dupa timer
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
