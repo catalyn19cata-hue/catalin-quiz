@@ -17,6 +17,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
+
 .container{
 width:420px;
 padding:30px;
@@ -27,6 +28,7 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
+
 input,select{
 width:90%;
 padding:12px;
@@ -34,6 +36,7 @@ border-radius:10px;
 border:none;
 margin-bottom:10px;
 }
+
 .btn{
 display:block;
 width:100%;
@@ -45,6 +48,7 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
+
 .playlist{
 color:white;
 text-align:left;
@@ -52,14 +56,20 @@ margin-top:15px;
 max-height:160px;
 overflow:auto;
 }
-.del{color:red;cursor:pointer;margin-left:8px;font-weight:bold;}
+
+.del{
+color:red;
+cursor:pointer;
+margin-left:8px;
+font-weight:bold;
+}
+
 .liveBox{
 margin-top:20px;
 padding:15px;
 border-radius:15px;
 background:rgba(0,0,0,0.35);
 color:white;
-font-size:14px;
 text-align:left;
 }
 </style>
@@ -91,8 +101,8 @@ text-align:left;
 <div id="playlist" class="playlist"></div>
 
 <div class="liveBox">
-<b>LIVE:</b><br>
-<div id="liveQuestion">—</div>
+<b>LIVE:</b>
+<div id="liveQuestion"></div>
 <div id="liveCorrect"></div>
 <div id="liveTimer"></div>
 </div>
@@ -122,7 +132,7 @@ const db=firebase.database();
 
 let playlist=JSON.parse(localStorage.getItem("quiz_playlist"))||[];
 let currentIndex=0;
-let adminTimerInterval=null;
+let timerInterval=null;
 
 function savePlaylist(){
 localStorage.setItem("quiz_playlist",JSON.stringify(playlist));
@@ -135,6 +145,7 @@ playlistDiv.innerHTML+=`${i+1}. ${q.question} (${q.correct})
 <span class="del" onclick="deleteQuestion(${i})">❌</span><br>`;
 });
 }
+
 const playlistDiv=document.getElementById("playlist");
 renderPlaylist();
 
@@ -160,24 +171,48 @@ if(!playlist.length){alert("Nu există întrebări.");return;}
 alert(playlist[playlist.length-1].question);
 }
 
-// 🔥 TIMER PROFESIONAL
+// 🔥 TIMER NUMERIC STABIL
 function send(){
 
 if(!playlist[currentIndex]) return;
 
+if(timerInterval) clearInterval(timerInterval);
+
 const qObj=playlist[currentIndex];
-const endTime=Date.now()+20000;
 
 db.ref("live").set({
 question:qObj.question,
 options:qObj.options,
 correct:qObj.correct,
-endTime:endTime,
+timer:20,
 paused:false,
 votes:{A:0,B:0,C:0},
 lastClick:"",
 finished:false
 });
+
+let t=20;
+
+timerInterval=setInterval(()=>{
+
+db.ref("live/paused").once("value").then(s=>{
+
+if(s.val()){
+clearInterval(timerInterval);
+return;
+}
+
+if(t<0){
+clearInterval(timerInterval);
+return;
+}
+
+db.ref("live/timer").set(t);
+t--;
+
+});
+
+},1000);
 
 currentIndex++;
 }
@@ -186,6 +221,7 @@ function resetLive(){
 currentIndex=0;
 db.ref("live").set({
 question:"Așteaptă următoarea întrebare...",
+timer:0,
 paused:true,
 finished:false
 });
@@ -198,29 +234,14 @@ db.ref("live/finished").set(true);
 }
 }
 
-// 🔥 LIVE VIEW TIMER
+// LIVE VIEW
 db.ref("live").on("value",snap=>{
-
 const data=snap.val();
 if(!data) return;
 
-liveQuestion.innerText="Întrebare: "+(data.question||"—");
+liveQuestion.innerText="Întrebare: "+(data.question||"");
 liveCorrect.innerText=data.correct?"Corect: "+data.correct:"";
-
-if(adminTimerInterval) clearInterval(adminTimerInterval);
-
-adminTimerInterval=setInterval(()=>{
-
-if(!data.endTime){
-liveTimer.innerText="";
-return;
-}
-
-const r=Math.max(0,Math.floor((data.endTime-Date.now())/1000));
-liveTimer.innerText="Timer: "+r+" sec";
-
-},250);
-
+liveTimer.innerText=data.timer>=0?"Timer: "+data.timer+" sec":"";
 });
 
 </script>
