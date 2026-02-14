@@ -50,19 +50,6 @@ margin-top:20px;
 font-size:18px;
 }
 
-.pause{
-font-size:26px;
-color:white;
-letter-spacing:2px;
-animation:pulse 1.2s infinite;
-}
-
-@keyframes pulse{
-0%{opacity:0.5}
-50%{opacity:1}
-100%{opacity:0.5}
-}
-
 </style>
 </head>
 
@@ -97,12 +84,16 @@ function vote(opt){
 const dataCache=window.liveData||{};
 if(dataCache.timer<=0) return;
 
+// 🔥 un singur vot per intrebare
 const q=document.getElementById("question").innerText;
 if(localStorage.getItem("voted_"+q)) return;
 
 localStorage.setItem("voted_"+q,"yes");
 
+// vote count real
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
+
+// mov global
 db.ref("live/lastClick").set(opt);
 }
 
@@ -116,8 +107,9 @@ window.liveData=data;
 const container=document.querySelector(".container");
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
+// 🔥 STOP = mesaj asteptare
 if(data.paused){
-document.getElementById("question").innerHTML="<span class='pause'>LIVE ÎN PAUZĂ</span>";
+document.getElementById("question").innerText="Așteaptă următoarea întrebare...";
 document.getElementById("timer").innerText="";
 document.getElementById("result").innerText="";
 return;
@@ -139,10 +131,13 @@ btn.dataset.key=k;
 
 btn.onclick=()=>{
  vote(k);
+
+ // bounce mic
  btn.style.transform="scale(0.9)";
  setTimeout(()=>btn.style.transform="scale(1)",120);
 };
 
+// 💜 mov pentru toti
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
@@ -151,9 +146,7 @@ container.insertBefore(btn,document.getElementById("result"));
 
 });
 
-let total=0;
-Object.values(votes).forEach(v=>total+=v);
-
+// 🔥 NUMAR REAL VOTURI
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
@@ -161,6 +154,7 @@ txt+=k+": "+(votes[k]||0)+" voturi | ";
 
 document.getElementById("result").innerText=txt;
 
+// 🟢 raspuns corect dupa timer
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
