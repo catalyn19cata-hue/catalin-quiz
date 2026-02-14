@@ -20,16 +20,14 @@ align-items:center;
 }
 
 .container{
-width:350px;
-padding:30px;
+width:90%;
+max-width:350px;
+padding:25px;
 border-radius:25px;
 text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
-box-shadow:
-0 0 0 1px rgba(255,255,255,0.2),
-0 20px 40px rgba(0,0,0,0.4);
 }
 
 h2{color:white;}
@@ -48,7 +46,7 @@ transition:0.15s ease;
 
 .result{
 color:white;
-margin-top:20px;
+margin-top:15px;
 font-size:18px;
 }
 
@@ -83,9 +81,10 @@ const db=firebase.database();
 
 function vote(opt){
 
+ // 🔥 increment vot
  db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
- // 🔥 salvam ultima apasare pentru toti
+ // 🔥 salvam ultima optiune global
  db.ref("live/lastClick").set(opt);
 }
 
@@ -99,13 +98,14 @@ document.getElementById("timer").innerText=data.timer?("Timp rămas: "+data.time
 
 const container=document.querySelector(".container");
 
-// stergem butoane vechi
+// stergem butoanele vechi
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
 const opt=data.options||{};
 const votes=data.votes||{};
+const last=data.lastClick||"";
 
-// 🔥 generam butoane live
+// 🔥 reconstruim butoanele (identic pentru TOTI)
 Object.keys(opt).forEach(k=>{
 
 const btn=document.createElement("button");
@@ -113,16 +113,17 @@ btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
 
+// CLICK
 btn.onclick=()=>{
  vote(k);
 
- // animatie mica
+ // mica animatie vizuala
  btn.style.transform="scale(0.9)";
  setTimeout(()=>btn.style.transform="scale(1)",120);
 };
 
-// 💜 daca cineva a apasat ultima data
-if(data.lastClick===k){
+// 💜 MOV GLOBAL (citit din Firebase)
+if(last===k){
  btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
@@ -130,7 +131,7 @@ container.insertBefore(btn,document.getElementById("result"));
 
 });
 
-// 🔥 procente live
+// 🔥 procente
 let total=0;
 Object.values(votes).forEach(v=>total+=v);
 
@@ -142,7 +143,7 @@ txt+=k+": "+p+"% | ";
 
 document.getElementById("result").innerText=txt;
 
-// 🟢 raspuns corect la final timer
+// 🟢 raspuns corect la final
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
  if(b.dataset.key===data.correct){
