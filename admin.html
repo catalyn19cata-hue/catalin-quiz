@@ -6,6 +6,7 @@
 <title>Admin Control</title>
 
 <style>
+
 body{
 margin:0;
 font-family:Jumble;
@@ -19,7 +20,7 @@ align-items:center;
 }
 
 .container{
-width:400px;
+width:420px;
 padding:30px;
 border-radius:25px;
 text-align:center;
@@ -63,6 +64,18 @@ cursor:pointer;
 margin-left:8px;
 font-weight:bold;
 }
+
+/* 🔥 LIVE VIEW */
+.liveBox{
+margin-top:20px;
+padding:15px;
+border-radius:15px;
+background:rgba(0,0,0,0.35);
+color:white;
+font-size:14px;
+text-align:left;
+}
+
 </style>
 </head>
 
@@ -91,6 +104,14 @@ font-weight:bold;
 
 <div id="playlist" class="playlist"></div>
 
+<!-- 🔥 LIVE INFO JOS -->
+<div class="liveBox">
+<b>LIVE:</b><br>
+<div id="liveQuestion">—</div>
+<div id="liveCorrect"></div>
+<div id="liveTimer"></div>
+</div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -98,6 +119,16 @@ font-weight:bold;
 
 <script>
 
+// 🔐 PAROLA
+const parola="catalin19";
+let introdusa=prompt("Introdu parola admin:");
+
+if(introdusa!==parola){
+document.body.innerHTML="<h1 style='color:white;text-align:center;margin-top:40vh;'>Acces interzis</h1>";
+throw new Error("Parola gresita");
+}
+
+// 🔥 FIREBASE
 const firebaseConfig={
  apiKey:"APIKEYUL_TAU",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
@@ -108,10 +139,10 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
+// 🔥 PLAYLIST SALVAT
 let playlist=JSON.parse(localStorage.getItem("quiz_playlist"))||[];
 
 let currentIndex=0;
-let lastSentIndex=-1;
 let timerInterval=null;
 
 function savePlaylist(){
@@ -123,12 +154,10 @@ const div=document.getElementById("playlist");
 div.innerHTML="";
 
 playlist.forEach((q,i)=>{
-
 div.innerHTML+=`
 ${i+1}. ${q.question} (${q.correct})
 <span class="del" onclick="deleteQuestion(${i})">❌</span><br>
 `;
-
 });
 }
 
@@ -140,6 +169,7 @@ savePlaylist();
 renderPlaylist();
 }
 
+// ➕ ADD
 function addQuestion(){
 
 playlist.push({
@@ -161,15 +191,16 @@ document.getElementById("b").value="";
 document.getElementById("c").value="";
 }
 
-// 👁️ PREVIEW — FIX REAL
+// 👁️ PREVIEW
 function preview(){
 
-if(lastSentIndex<0){
-alert("Nu ai trimis încă nicio întrebare live.");
+if(!playlist.length){
+alert("Nu există întrebări.");
 return;
 }
 
-alert(playlist[lastSentIndex].question);
+const last=playlist[playlist.length-1];
+alert(last.question);
 }
 
 // ▶️ NEXT
@@ -206,7 +237,6 @@ t--;
 
 },1000);
 
-lastSentIndex=currentIndex;
 currentIndex++;
 }
 
@@ -235,6 +265,25 @@ db.ref("live/finished").set(true);
 }
 
 }
+
+// 🔥 LIVE VIEW UPDATE
+db.ref("live").on("value",snap=>{
+
+const data=snap.val();
+if(!data) return;
+
+document.getElementById("liveQuestion").innerText="Întrebare: "+(data.question||"—");
+
+if(data.correct){
+document.getElementById("liveCorrect").innerText="Corect: "+data.correct;
+}else{
+document.getElementById("liveCorrect").innerText="";
+}
+
+document.getElementById("liveTimer").innerText=
+(data.timer>=0?"Timer: "+data.timer+" sec":"");
+
+});
 
 </script>
 
