@@ -72,36 +72,25 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
 
-let liveData = null;
+let liveData=null;
 let localTimerInterval=null;
 
 function vote(opt){
 
-// 🔥 daca nu avem date live -> iesi
 if(!liveData) return;
-
-// 🔥 daca e pauza -> iesi
 if(liveData.paused) return;
-
-// 🔥 daca nu exista timer -> iesi
 if(!liveData.endTime) return;
 
-// 🔥 calculeaza timpul ramas REAL
-const remaining = Math.floor((liveData.endTime - Date.now())/1000);
+const remaining=(liveData.endTime-Date.now())/1000;
+if(remaining<=0) return;
 
-if(remaining <= 0) return;
-
-// 🔥 un vot per intrebare
 const voteKey="voted_"+btoa(liveData.question||"");
-
 if(localStorage.getItem(voteKey)) return;
 
 localStorage.setItem(voteKey,"yes");
 
-// 🔥 voteaza sigur
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 db.ref("live/lastClick").set(opt);
-
 }
 
 db.ref("live").on("value",snap=>{
@@ -112,11 +101,9 @@ if(!data) return;
 liveData=data;
 
 const container=document.querySelector(".container");
-
-// sterge butoane vechi
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
-// 🔥 TIMER LOCAL
+// 🔥 TIMER LOCAL + COLORARE CORECTA
 if(localTimerInterval) clearInterval(localTimerInterval);
 
 localTimerInterval=setInterval(()=>{
@@ -126,13 +113,24 @@ timer.innerText="";
 return;
 }
 
-const r=Math.max(0,
+const remaining=Math.max(0,
 Math.floor((liveData.endTime-Date.now())/1000)
 );
 
-timer.innerText="Timp rămas: "+r+" sec";
+timer.innerText="Timp rămas: "+remaining+" sec";
 
-},250);
+// 🔥 AICI COLORAM VERDE DUPA EXPIRARE
+if(remaining<=0 && liveData.correct){
+
+document.querySelectorAll(".dynamic").forEach(b=>{
+if(b.dataset.key===liveData.correct){
+b.style.background="linear-gradient(90deg,#00c853,#00e676)";
+}
+});
+
+}
+
+},200);
 
 // 🔴 FINAL
 if(data.finished){
@@ -148,7 +146,7 @@ result.innerText="";
 return;
 }
 
-// 🔥 AFISEAZA INTREBAREA
+// 🔥 INTREBARE
 question.innerText=data.question||"";
 
 const opt=data.options||{};
@@ -162,8 +160,7 @@ btn.className="btn dynamic";
 btn.innerText=opt[k];
 btn.dataset.key=k;
 
-// 🔥 CLICK VOT
-btn.addEventListener("click",()=>vote(k));
+btn.onclick=()=>vote(k);
 
 if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
@@ -173,21 +170,12 @@ container.insertBefore(btn,result);
 
 });
 
-// 🔥 AFISEAZA VOTURI
+// 🔥 VOTURI
 let txt="";
 Object.keys(opt).forEach(k=>{
 txt+=k+": "+(votes[k]||0)+" voturi | ";
 });
 result.innerText=txt;
-
-// 🔥 CORECT DUPA TIMER
-if(data.endTime && Date.now()>data.endTime && data.correct){
-document.querySelectorAll(".dynamic").forEach(b=>{
-if(b.dataset.key===data.correct){
-b.style.background="linear-gradient(90deg,#00c853,#00e676)";
-}
-});
-}
 
 });
 
