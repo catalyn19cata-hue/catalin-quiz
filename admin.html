@@ -2,49 +2,49 @@
 <html lang="ro">
 <head>
 <meta charset="UTF-8">
-<title>Admin Quiz Playlist</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Quiz Control</title>
 
 <style>
 body{
 margin:0;
-font-family:Jumble, sans-serif;
-background-image:url("img2.jpeg");
-background-size:cover;
+font-family:Arial;
+background:#020617;
 display:flex;
 justify-content:center;
 align-items:center;
 min-height:100vh;
 }
+
 .container{
-width:420px;
-padding:30px;
-border-radius:25px;
-text-align:center;
-background:linear-gradient(135deg,rgba(0,80,255,0.15),rgba(0,0,60,0.1));
-backdrop-filter:blur(18px);
-border:1px solid #66ccff;
-color:white;
-}
-input,select{
 width:90%;
-padding:12px;
+max-width:420px;
+padding:25px;
+border-radius:20px;
+text-align:center;
+background:rgba(20,30,60,0.6);
+backdrop-filter:blur(20px);
+border:1px solid #66ccff;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:6px 0;
 border-radius:10px;
 border:none;
-margin-bottom:10px;
 }
+
 .btn{
-display:block;
 width:100%;
-margin:10px 0;
-padding:15px;
+padding:14px;
+margin-top:10px;
 border-radius:40px;
 color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
-border:2px solid #66ccff;
+border:none;
 cursor:pointer;
 }
-#list{margin-top:10px;text-align:left;}
-#preview{margin-top:10px;}
 </style>
 </head>
 
@@ -52,29 +52,14 @@ cursor:pointer;
 
 <div class="container">
 
-<h2>Admin Quiz Playlist</h2>
+<h2 style="color:white;">ADMIN QUIZ</h2>
 
-<input id="q" placeholder="Întrebarea">
-<input id="a" placeholder="Varianta A">
-<input id="b" placeholder="Varianta B">
-<input id="c" placeholder="Varianta C">
+<select id="playlist"></select>
 
-<select id="correct">
-<option value="A">Corect: A</option>
-<option value="B">Corect: B</option>
-<option value="C">Corect: C</option>
-</select>
-
-<button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
-<button class="btn" onclick="previewManual()">👁 PREVIEW</button>
-<button class="btn" onclick="startLive()">START ▶</button>
-<button class="btn" onclick="next()">NEXT ▶</button>
-<button class="btn" onclick="resetLive()">RESET 🔄</button>
-
-<div id="list"></div>
-
-<h3>Preview întrebare</h3>
-<div id="preview"></div>
+<button class="btn" onclick="preview()">Preview</button>
+<button class="btn" onclick="send()">SEND LIVE</button>
+<button class="btn" onclick="startTimer()">START TIMER</button>
+<button class="btn" onclick="resetLive()">RESET</button>
 
 </div>
 
@@ -82,8 +67,11 @@ cursor:pointer;
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+
+const ADMIN_KEY="quizboss";
+
 const firebaseConfig={
- apiKey:"APIKEYUL_TAU",
+ apiKey:"AIzaSyBa0GIcnOJO5_sRff8F4fogtrsxlpOCXE0",
  authDomain:"web-quiz-3eea6.firebaseapp.com",
  databaseURL:"https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
  projectId:"web-quiz-3eea6"
@@ -95,120 +83,73 @@ const db=firebase.database();
 let playlist=[
 {question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
 {question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"},
-{question:"Culoarea cerului?",options:{A:"Roșu",B:"Albastru",C:"Verde"},correct:"B"},
-{question:"Cat de frumoasa este iubita mea?",options:{A:"Draguta",B:"Frumoasa",C:"Extrem de frumoasa"},correct:"C"}
+{question:"Culoarea cerului?",options:{A:"Roșu",B:"Albastru",C:"Verde"},correct:"B"}
 ];
 
-let index=0;
+const select=document.getElementById("playlist");
 
-renderList();
-updatePreview();
+playlist.forEach((q,i)=>{
+ const opt=document.createElement("option");
+ opt.value=i;
+ opt.innerText=(i+1)+". "+q.question;
+ select.appendChild(opt);
+});
 
-function addQuestion(){
-
- const q=document.getElementById("q").value;
- const A=document.getElementById("a").value;
- const B=document.getElementById("b").value;
- const C=document.getElementById("c").value;
- const correct=document.getElementById("correct").value;
-
- if(!q) return;
-
- playlist.push({
-   question:q,
-   options:{A:A,B:B,C:C},
-   correct:correct
- });
-
- renderList();
+function preview(){
+ const q=playlist[select.value];
+ alert(q.question);
 }
 
-function renderList(){
- let txt="";
- playlist.forEach((p,i)=>{
-   txt+=(i+1)+". "+p.question+" (corect "+p.correct+")<br>";
- });
- document.getElementById("list").innerHTML=txt;
-}
+function send(){
 
-function previewManual(){
+ const key=prompt("Parola admin:");
+ if(key!==ADMIN_KEY) return;
 
- const q=document.getElementById("q").value;
- const A=document.getElementById("a").value;
- const B=document.getElementById("b").value;
- const C=document.getElementById("c").value;
- const correct=document.getElementById("correct").value;
-
- document.getElementById("preview").innerHTML=
- "➡️ "+q+
- "<br>A: "+A+
- "<br>B: "+B+
- "<br>C: "+C+
- "<br><span style='color:#00ff95;'>Corect: "+correct+"</span>";
-}
-
-function updatePreview(){
- const p=playlist[index];
- if(!p) return;
-
- document.getElementById("preview").innerHTML=
- "➡️ "+p.question+
- "<br>A: "+p.options.A+
- "<br>B: "+p.options.B+
- "<br>C: "+p.options.C+
- "<br><span style='color:#00ff95;'>Corect: "+p.correct+"</span>";
-}
-
-function startLive(){
- index=0;
- pushLive();
-}
-
-function next(){
- index++;
- if(index>=playlist.length) return alert("Final playlist");
- pushLive();
-}
-
-function pushLive(){
-
- const data=playlist[index];
+ const q=playlist[select.value];
 
  db.ref("live").set({
-   question:data.question,
-   options:data.options,
-   correct:data.correct,
+   question:q.question,
+   options:q.options,
+   correct:q.correct,
    timer:20,
-   votes:{A:0,B:0,C:0}
+   votes:{A:0,B:0,C:0},
+   lastClick:""
  });
-
- startTimer();
- updatePreview();
 }
 
 function startTimer(){
+
+ const key=prompt("Parola admin:");
+ if(key!==ADMIN_KEY) return;
+
  let t=20;
+
  const interval=setInterval(()=>{
-   t--;
-   db.ref("live/timer").set(t);
-   if(t<=0) clearInterval(interval);
+
+ if(t<0){
+ clearInterval(interval);
+ return;
+ }
+
+ db.ref("live/timer").set(t);
+ t--;
+
  },1000);
 }
- function resetLive(){
+
+function resetLive(){
+
+ const key=prompt("Parola admin:");
+ if(key!==ADMIN_KEY) return;
 
  db.ref("live").set({
    question:"Așteaptă următoarea întrebare...",
-   options:{},
-   timer:"",
-   votes:{}
+   timer:0,
+   votes:{},
+   options:{}
  });
-
- document.getElementById("preview").innerHTML="Live resetat.";
 }
-</script>
 
+</script>
 </body>
 </html>
-
-
-
