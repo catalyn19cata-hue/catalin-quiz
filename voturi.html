@@ -72,10 +72,14 @@ h2{
 <body>
 
 <div class="container">
+
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
 <h3 id="timer" style="color:white;"></h3>
-    
+
+<!-- BUTOANELE SE GENEREAZĂ AUTOMAT DIN FIREBASE -->
+
 <div class="result" id="result"></div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -83,7 +87,7 @@ h2{
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyBa0GIcnOJ05_sRff8F4fogtrsxlp0CXE0",
+  apiKey: "APIKEYUL_TAU",
   authDomain: "web-quiz-3eea6.firebaseapp.com",
   databaseURL: "https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "web-quiz-3eea6"
@@ -93,55 +97,49 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 function vote(opt){
- db.ref("quiz/votes/"+opt).transaction(v=> (v||0)+1);
+   db.ref("live/votes/"+opt).transaction(v => (v||0)+1);
 }
 
-db.ref("quiz").on("value", snap=>{
+// 🔥 ASCULTĂ LIVE QUIZ
+db.ref("live").on("value", snap=>{
  const data=snap.val();
  if(!data) return;
 
  document.getElementById("question").innerText=data.question;
  document.getElementById("timer").innerText="Timp rămas: "+data.timer+" sec";
 
- // 🔥 Creeaza butoanele automat
+ const opt=data.options||{};
+ const votes=data.votes||{};
+
  const container=document.querySelector(".container");
 
- // sterge butoane vechi
- document.querySelectorAll(".autoBtn").forEach(b=>b.remove());
+ // sterge variantele vechi
+ document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
- if(data.options){
-   Object.keys(data.options).forEach(key=>{
-      const btn=document.createElement("button");
-      btn.className="btn autoBtn";
-      btn.innerText=data.options[key];
-      btn.onclick=()=>vote(key);
-      container.insertBefore(btn, document.getElementById("result"));
-   });
- }
-
- // 🔥 Calculeaza procente automat
- let total=0;
- Object.values(data.votes||{}).forEach(v=> total+=v||0);
-
- let txt="";
- Object.keys(data.votes||{}).forEach(k=>{
-    let v=data.votes[k]||0;
-    let p=total?Math.round(v*100/total):0;
-    txt+=k+": "+p+"% | ";
+ // creeaza variante automat
+ Object.keys(opt).forEach(k=>{
+   const btn=document.createElement("button");
+   btn.className="btn dynamic";
+   btn.innerText=opt[k];
+   btn.onclick=()=>vote(k);
+   container.insertBefore(btn,document.getElementById("result"));
  });
 
- document.getElementById("result").innerText=txt;
+ // calculeaza procente
+ let total=0;
+ Object.values(votes).forEach(v=> total+=v);
+
+ let text="";
+
+ Object.keys(opt).forEach(k=>{
+   let val=votes[k]||0;
+   let p=total?Math.round(val*100/total):0;
+   text+=k+": "+p+"% | ";
+ });
+
+ document.getElementById("result").innerText=text;
 });
 </script>
 
 </body>
-
 </html>
-
-
-
-
-
-
-
-
