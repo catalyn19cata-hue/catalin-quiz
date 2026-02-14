@@ -121,7 +121,9 @@ div.innerHTML+=(i+1)+". "+q.question+" ("+q.correct+")<br>";
 
 renderPlaylist();
 
+// ➕ ADD
 function addQuestion(){
+
 playlist.push({
 question:document.getElementById("q").value,
 options:{
@@ -131,13 +133,23 @@ C:document.getElementById("c").value
 },
 correct:document.getElementById("correct").value
 });
+
 renderPlaylist();
+
+// 🔥 goleste campurile
+document.getElementById("q").value="";
+document.getElementById("a").value="";
+document.getElementById("b").value="";
+document.getElementById("c").value="";
 }
 
+// 👁️ PREVIEW — functioneaza indiferent de reset/stop
 function preview(){
+if(!playlist[currentIndex]) return;
 alert(playlist[currentIndex].question);
 }
 
+// ▶️ NEXT + TIMER AUTO
 function send(){
 
 const q=playlist[currentIndex];
@@ -162,6 +174,7 @@ t--;
 currentIndex++;
 }
 
+// 🔄 RESET
 function resetLive(){
 
 currentIndex=0;
@@ -175,11 +188,12 @@ options:{}
 });
 }
 
+// ⛔ STOP
 function stopQuestion(){
 db.ref("live/paused").set(true);
 }
 
-// animatie butoane
+// ✨ bounce effect admin
 document.querySelectorAll(".btn").forEach(b=>{
 b.addEventListener("click",()=>{
 b.style.transform="scale(0.9)";
@@ -191,3 +205,5 @@ setTimeout(()=>b.style.transform="scale(1)",120);
 
 </body>
 </html>
+🧠 Ce ai ACUM exact
+👁️ Previ
