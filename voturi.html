@@ -75,25 +75,22 @@ function getVoteKey(){
   return "voted_"+(liveData?.question || "");
 }
 
-function alreadyVoted(){
-  return localStorage.getItem(getVoteKey());
-}
-
 function vote(opt){
 
   if(!liveData || liveData.paused) return;
 
   const voteKey=getVoteKey();
 
-  // un vot per intrebare
+  // 🔥 un vot per intrebare
   if(localStorage.getItem(voteKey)) return;
 
-  localStorage.setItem(voteKey,"yes");
+  // 🔥 salvam varianta aleasa (A/B/C)
+  localStorage.setItem(voteKey,opt);
 
-  // trimite vot
+  // 🔥 trimite vot
   db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 
-  // culoare mov instant
+  // 💜 mov instant
   document.querySelectorAll(".dynamic").forEach(b=>{
     if(b.dataset.key===opt){
       b.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
@@ -136,7 +133,8 @@ db.ref("live").on("value",snap=>{
   const opt=data.options||{};
   const votes=data.votes||{};
 
-  const voted = alreadyVoted();
+  // 🔥 ce a votat userul
+  const votedOpt = localStorage.getItem(getVoteKey());
 
   Object.keys(opt).forEach(k=>{
 
@@ -146,12 +144,12 @@ db.ref("live").on("value",snap=>{
     btn.dataset.key=k;
     btn.onclick=()=>vote(k);
 
-    // pastreaza mov daca deja a votat
-    if(voted){
+    // 💜 pastreaza mov daca a votat deja
+    if(votedOpt){
       btn.disabled=true;
-      if(localStorage.getItem(getVoteKey())==="yes"){
-        // doar stil general blocat
-        btn.style.opacity="0.9";
+
+      if(votedOpt===k){
+        btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
       }
     }
 
@@ -165,7 +163,7 @@ db.ref("live").on("value",snap=>{
   });
   result.innerText=txt;
 
-  // raspuns corect cand timer = 0
+  // 🟢 raspuns corect cand timer = 0
   if(typeof data.timer==="number" && data.timer<=0 && data.correct){
     document.querySelectorAll(".dynamic").forEach(b=>{
       if(b.dataset.key===data.correct){
