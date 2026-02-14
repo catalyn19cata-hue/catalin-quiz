@@ -20,9 +20,8 @@ align-items:center;
 }
 
 .container{
-width:90%;
-max-width:350px;
-padding:25px;
+width:350px;
+padding:30px;
 border-radius:25px;
 text-align:center;
 background:linear-gradient(135deg,rgba(0,80,255,0.12),rgba(0,0,60,0.08));
@@ -31,7 +30,7 @@ border:1px solid #66ccff;
 }
 
 h2{color:white;}
-.result{color:white;margin-top:10px;}
+h3{color:white;}
 
 .btn{
 display:block;
@@ -42,7 +41,13 @@ color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
-transition:.15s;
+transition:0.15s;
+}
+
+.result{
+color:white;
+margin-top:15px;
+font-size:18px;
 }
 
 </style>
@@ -51,9 +56,12 @@ transition:.15s;
 <body>
 
 <div class="container">
+
+<h3 id="timer"></h3>
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
-<h3 id="timer" style="color:white;"></h3>
+
 <div id="result" class="result"></div>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -73,6 +81,9 @@ const db=firebase.database();
 
 function vote(opt){
 
+const dataCache=window.liveData||{};
+if(dataCache.timer<=0) return;
+
 const q=document.getElementById("question").innerText;
 if(localStorage.getItem("voted_"+q)) return;
 
@@ -80,6 +91,7 @@ localStorage.setItem("voted_"+q,"yes");
 
 db.ref("live/votes/"+opt).transaction(v=>(v||0)+1);
 db.ref("live/lastClick").set(opt);
+
 }
 
 db.ref("live").on("value",snap=>{
@@ -87,9 +99,12 @@ db.ref("live").on("value",snap=>{
 const data=snap.val();
 if(!data) return;
 
-question.innerText=data.question||"";
-timer.innerText=data.timer?("Timp rămas: "+data.timer+" sec"):"";
+window.liveData=data;
 
+question.innerText=data.question||"";
+timer.innerText=data.timer?("⏱ "+data.timer+" sec"):"";
+
+const container=document.querySelector(".container");
 document.querySelectorAll(".dynamic").forEach(e=>e.remove());
 
 const opt=data.options||{};
@@ -113,20 +128,15 @@ if(last===k){
 btn.style.background="linear-gradient(90deg,#7b1fa2,#ba68c8)";
 }
 
-document.querySelector(".container").insertBefore(btn,result);
+container.insertBefore(btn,result);
 
 });
 
+// 👥 NUMAR TOTAL VOTURI
 let total=0;
 Object.values(votes).forEach(v=>total+=v);
 
-let txt="";
-Object.keys(opt).forEach(k=>{
-let p=total?Math.round((votes[k]||0)*100/total):0;
-txt+=k+": "+p+"% | ";
-});
-
-result.innerText=txt;
+result.innerText="👥 "+total+" persoane au votat LIVE";
 
 if(data.timer<=0 && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
@@ -139,5 +149,6 @@ b.style.background="linear-gradient(90deg,#00c853,#00e676)";
 });
 
 </script>
+
 </body>
 </html>
