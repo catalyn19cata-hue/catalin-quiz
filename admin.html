@@ -3,48 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Quiz Control</title>
+<title>Admin Quiz</title>
 
 <style>
+
 body{
 margin:0;
-font-family:Arial;
-background:#020617;
+font-family:Arial, sans-serif;
+background-image:url("img2.jpeg");
+background-size:cover;
+background-position:center;
+min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-min-height:100vh;
 }
 
 .container{
 width:90%;
-max-width:420px;
-padding:25px;
-border-radius:20px;
+max-width:360px;
+padding:30px;
+border-radius:25px;
 text-align:center;
-background:rgba(20,30,60,0.6);
-backdrop-filter:blur(20px);
+
+background:linear-gradient(
+135deg,
+rgba(0,80,255,0.12),
+rgba(0,0,60,0.08)
+);
+
+backdrop-filter:blur(18px);
 border:1px solid #66ccff;
+
+box-shadow:
+0 0 0 1px rgba(255,255,255,0.2),
+0 20px 40px rgba(0,0,0,0.4);
 }
 
-input,select{
+h2{color:white;margin-bottom:10px;}
+
+select{
 width:100%;
-padding:10px;
-margin:6px 0;
+padding:12px;
 border-radius:10px;
 border:none;
+margin-bottom:10px;
 }
 
 .btn{
+display:block;
 width:100%;
-padding:14px;
-margin-top:10px;
+margin:10px 0;
+padding:15px;
 border-radius:40px;
 color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
-border:none;
+border:2px solid #66ccff;
 cursor:pointer;
+transition:0.2s;
 }
+
+.btn:hover{
+transform:translateY(-2px) scale(1.03);
+}
+
 </style>
 </head>
 
@@ -52,14 +74,14 @@ cursor:pointer;
 
 <div class="container">
 
-<h2 style="color:white;">ADMIN QUIZ</h2>
+<h2>Admin Quiz Control</h2>
 
 <select id="playlist"></select>
 
 <button class="btn" onclick="preview()">Preview</button>
-<button class="btn" onclick="send()">SEND LIVE</button>
-<button class="btn" onclick="startTimer()">START TIMER</button>
-<button class="btn" onclick="resetLive()">RESET</button>
+<button class="btn" onclick="send()">Send LIVE</button>
+<button class="btn" onclick="startTimer()">Start Timer</button>
+<button class="btn" onclick="resetLive()">Reset</button>
 
 </div>
 
@@ -89,65 +111,58 @@ let playlist=[
 const select=document.getElementById("playlist");
 
 playlist.forEach((q,i)=>{
- const opt=document.createElement("option");
- opt.value=i;
- opt.innerText=(i+1)+". "+q.question;
- select.appendChild(opt);
+const opt=document.createElement("option");
+opt.value=i;
+opt.innerText=(i+1)+". "+q.question;
+select.appendChild(opt);
 });
 
 function preview(){
- const q=playlist[select.value];
- alert(q.question);
+alert(playlist[select.value].question);
 }
 
 function send(){
+const key=prompt("Parola admin:");
+if(key!==ADMIN_KEY) return;
 
- const key=prompt("Parola admin:");
- if(key!==ADMIN_KEY) return;
+const q=playlist[select.value];
 
- const q=playlist[select.value];
-
- db.ref("live").set({
-   question:q.question,
-   options:q.options,
-   correct:q.correct,
-   timer:20,
-   votes:{A:0,B:0,C:0},
-   lastClick:""
- });
+db.ref("live").set({
+question:q.question,
+options:q.options,
+correct:q.correct,
+timer:20,
+votes:{A:0,B:0,C:0},
+lastClick:""
+});
 }
 
 function startTimer(){
 
- const key=prompt("Parola admin:");
- if(key!==ADMIN_KEY) return;
+const key=prompt("Parola admin:");
+if(key!==ADMIN_KEY) return;
 
- let t=20;
+let t=20;
 
- const interval=setInterval(()=>{
+const interval=setInterval(()=>{
+if(t<0){clearInterval(interval);return;}
+db.ref("live/timer").set(t);
+t--;
+},1000);
 
- if(t<0){
- clearInterval(interval);
- return;
- }
-
- db.ref("live/timer").set(t);
- t--;
-
- },1000);
 }
 
 function resetLive(){
 
- const key=prompt("Parola admin:");
- if(key!==ADMIN_KEY) return;
+const key=prompt("Parola admin:");
+if(key!==ADMIN_KEY) return;
 
- db.ref("live").set({
-   question:"Așteaptă următoarea întrebare...",
-   timer:0,
-   votes:{},
-   options:{}
- });
+db.ref("live").set({
+question:"Așteaptă următoarea întrebare...",
+timer:0,
+votes:{},
+options:{}
+});
 }
 
 </script>
