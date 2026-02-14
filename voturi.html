@@ -73,7 +73,8 @@ h2{
 
 <div class="container">
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
-
+<h3 id="timer" style="color:white;"></h3>
+    
 <button class="btn" onclick="vote('A')">Varianta A</button>
 <button class="btn" onclick="vote('B')">Varianta B</button>
 
@@ -94,16 +95,32 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+function vote(opt){
+ db.ref("quiz/votes/"+opt).transaction(v=> (v||0)+1);
+}
+
 db.ref("quiz").on("value", snap=>{
-   const data = snap.val();
-   if(data){
-      document.getElementById("question").innerText = data.question;
-   }
+ const data=snap.val();
+ if(!data) return;
+
+ document.getElementById("question").innerText=data.question;
+ document.getElementById("timer").innerText="Timp rămas: "+data.timer+" sec";
+
+ let A=data.votes?.A||0;
+ let B=data.votes?.B||0;
+ let total=A+B;
+
+ let pa=total?Math.round(A*100/total):0;
+ let pb=total?Math.round(B*100/total):0;
+
+ document.getElementById("result").innerText=
+   "A: "+pa+"% | B: "+pb+"%";
 });
 </script>
 
 </body>
 
 </html>
+
 
 
