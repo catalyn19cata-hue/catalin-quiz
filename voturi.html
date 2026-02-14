@@ -109,19 +109,22 @@ db.ref("quiz").on("value", snap=>{
 
  let A=data.votes?.A||0;
  let B=data.votes?.B||0;
- let total=A+B;
+ let C=data.votes?.C||0;
+ let total=A+B+C;
 
  let pa=total?Math.round(A*100/total):0;
  let pb=total?Math.round(B*100/total):0;
-
+ let pb=total?Math.round(C*100/total):0;
+    
  document.getElementById("result").innerText=
-   "A: "+pa+"% | B: "+pb+"%";
+   "A: "+pa+"% | B: "+pb+"%"; | C: "+pc+"%";
 });
 </script>
 
 </body>
 
 </html>
+
 
 
 
