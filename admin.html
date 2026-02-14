@@ -24,34 +24,44 @@ width:400px;
 padding:30px;
 border-radius:25px;
 text-align:center;
+
 background:linear-gradient(
 135deg,
 rgba(0,80,255,0.15),
 rgba(0,0,60,0.1)
 );
+
 backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
 
-select{
+input{
 width:90%;
 padding:12px;
 border-radius:10px;
 border:none;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 .btn{
 display:block;
 width:100%;
-margin:10px 0;
+margin:8px 0;
 padding:15px;
 border-radius:40px;
 color:white;
 background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
+}
+
+.playlist{
+color:white;
+text-align:left;
+margin-top:15px;
+max-height:120px;
+overflow:auto;
 }
 
 </style>
@@ -63,12 +73,19 @@ cursor:pointer;
 
 <h2 style="color:white;">Admin Quiz Control</h2>
 
-<select id="playlist"></select>
+<input id="q" placeholder="Întrebarea">
+<input id="a" placeholder="Varianta A">
+<input id="b" placeholder="Varianta B">
+<input id="c" placeholder="Varianta C">
+<input id="correct" placeholder="Răspuns corect (A/B/C)">
 
+<button class="btn" onclick="addQuestion()">Adaugă în playlist</button>
 <button class="btn" onclick="preview()">Preview</button>
-<button class="btn" onclick="send()">Trimite întrebare</button>
+<button class="btn" onclick="send()">Send LIVE</button>
 <button class="btn" onclick="startTimer()">Start Timer</button>
 <button class="btn" onclick="resetLive()">Reset</button>
+
+<div id="playlist" class="playlist"></div>
 
 </div>
 
@@ -91,21 +108,40 @@ const db=firebase.database();
 
 let playlist=[
 {question:"Capitala României?",options:{A:"București",B:"Cluj",C:"Iași"},correct:"A"},
-{question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"},
-{question:"Culoarea cerului?",options:{A:"Roșu",B:"Albastru",C:"Verde"},correct:"B"}
+{question:"2+2=?",options:{A:"3",B:"4",C:"5"},correct:"B"}
 ];
 
-const select=document.getElementById("playlist");
+function renderPlaylist(){
+
+const div=document.getElementById("playlist");
+div.innerHTML="";
 
 playlist.forEach((q,i)=>{
-const opt=document.createElement("option");
-opt.value=i;
-opt.innerText=(i+1)+". "+q.question;
-select.appendChild(opt);
+div.innerHTML+= (i+1)+". "+q.question+" ("+q.correct+")<br>";
+});
+}
+
+renderPlaylist();
+
+function addQuestion(){
+
+playlist.push({
+question:document.getElementById("q").value,
+options:{
+A:document.getElementById("a").value,
+B:document.getElementById("b").value,
+C:document.getElementById("c").value
+},
+correct:document.getElementById("correct").value
 });
 
+renderPlaylist();
+}
+
+let currentIndex=0;
+
 function preview(){
-alert(playlist[select.value].question);
+alert(playlist[currentIndex].question);
 }
 
 function send(){
@@ -113,7 +149,7 @@ function send(){
 const key=prompt("Parola admin:");
 if(key!==ADMIN_KEY) return;
 
-const q=playlist[select.value];
+const q=playlist[currentIndex];
 
 db.ref("live").set({
 question:q.question,
