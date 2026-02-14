@@ -6,9 +6,10 @@
 <title>Admin Control</title>
 
 <style>
+
 body{
 margin:0;
-font-family:Jumble;
+font-family:Jumble, sans-serif;
 background-image:url("img2.jpeg");
 background-size:cover;
 background-position:center;
@@ -17,6 +18,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
+
 .container{
 width:400px;
 padding:30px;
@@ -27,13 +29,15 @@ backdrop-filter:blur(18px);
 border:1px solid #66ccff;
 box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
+
 input{
 width:90%;
 padding:12px;
 border-radius:10px;
 border:none;
-margin-bottom:15px;
+margin-bottom:12px;
 }
+
 .btn{
 display:block;
 width:100%;
@@ -45,19 +49,26 @@ background:linear-gradient(90deg,#0000FF,#0099FF);
 border:2px solid #66ccff;
 cursor:pointer;
 }
+
 </style>
 </head>
 
 <body>
 
 <div class="container">
+
 <h2 style="color:white;">Admin Quiz Control</h2>
 
 <input id="q" placeholder="Scrie întrebarea...">
 
-<button class="btn" onclick="send()">Trimite întrebare</button>
-<button class="btn" onclick="startTimer()">Start Timer</button>
+<input id="a" placeholder="Varianta A">
+<input id="b" placeholder="Varianta B">
+<input id="c" placeholder="Varianta C">
+
+<button class="btn" onclick="send()">Trimite întrebare LIVE</button>
+<button class="btn" onclick="startTimer()">Start Timer 20s</button>
 <button class="btn" onclick="resetVotes()">Reset Vote</button>
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -65,7 +76,7 @@ cursor:pointer;
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyBa0GIcnOJ05_sRff8F4fogtrsxlp0CXE0",
+  apiKey: "APIKEYUL_TAU",
   authDomain: "web-quiz-3eea6.firebaseapp.com",
   databaseURL: "https://web-quiz-3eea6-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "web-quiz-3eea6"
@@ -74,38 +85,56 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let interval=null;
-
 function send(){
- const q=document.getElementById("q").value;
 
- db.ref("quiz").set({
+ const q=document.getElementById("q").value;
+ const A=document.getElementById("a").value;
+ const B=document.getElementById("b").value;
+ const C=document.getElementById("c").value;
+
+ db.ref("live").set({
    question:q,
-   timer:20,
-   votes:{A:0,B:0,C:0}
+   timer:0,
+   options:{
+     A:A,
+     B:B,
+     C:C
+   },
+   votes:{
+     A:0,
+     B:0,
+     C:0
+   }
  });
+
+ console.log("Quiz LIVE trimis");
 }
 
 function startTimer(){
- if(interval) clearInterval(interval);
 
- interval=setInterval(()=>{
-   db.ref("quiz/timer").once("value",snap=>{
-     let t=snap.val();
-     if(t>0){
-       db.ref("quiz").update({timer:t-1});
-     }else{
-       clearInterval(interval);
-     }
-   });
+ let t=20;
+
+ const interval=setInterval(()=>{
+   t--;
+
+   db.ref("live/timer").set(t);
+
+   if(t<=0) clearInterval(interval);
+
  },1000);
 }
 
 function resetVotes(){
- db.ref("quiz/votes").set({A:0,B:0});
+
+ db.ref("live/votes").set({
+   A:0,
+   B:0,
+   C:0
+ });
+
+ console.log("Votes reset");
 }
 </script>
+
 </body>
 </html>
-
-
