@@ -178,11 +178,6 @@ container.insertBefore(btn,result);
 });
 
 // 🔥 voturi sincronizate global
-let txt="";
-Object.keys(opt).forEach(k=>{
-txt+=k+": "+(votes[k]||0)+" voturi | ";
-});
-result.innerText=txt;
 
 // raspuns corect la final
 if(typeof data.timer==="number" && data.timer<=0 && data.correct){
