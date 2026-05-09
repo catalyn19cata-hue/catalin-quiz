@@ -17,7 +17,17 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
-
+.top-title{
+position:absolute;
+top:30px;
+left:50%;
+transform:translateX(-50%);
+color:white;
+font-size:38px;
+font-weight:bold;
+text-align:center;
+text-shadow:0 4px 10px rgba(0,0,0,0.5);
+}
 /* ⭐️ GLASS STYLE */
 .container{
 width:350px;
@@ -64,7 +74,7 @@ font-size:18px;
 </head>
 
 <body>
-
+<h1 class="top-title">Întrebări de cultură generală</h1>
 <div class="container">
 <h3 id="timer"></h3>
 <h2 id="question">Așteaptă următoarea întrebare...</h2>
