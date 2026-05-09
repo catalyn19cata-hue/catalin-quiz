@@ -163,7 +163,7 @@ Object.keys(opt).forEach(k=>{
 
 const btn=document.createElement("button");
 btn.className="btn dynamic";
-btn.innerText=opt[k];
+btn.innerText = k + ". " + opt[k];
 btn.dataset.key=k;
 btn.onclick=()=>vote(k);
 
