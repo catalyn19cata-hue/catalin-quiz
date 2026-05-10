@@ -210,8 +210,24 @@ currentIndex++;
 }
 
 function resetLive(){
+
 currentIndex=0;
-db.ref("live").set({paused:true,finished:false});
+
+// reset live
+db.ref("live").set({
+paused:true,
+finished:false,
+question:"",
+options:{},
+votes:{A:0,B:0,C:0},
+timer:0,
+timerStart:null,
+correct:""
+});
+
+// 🔥 RESET LEADERBOARD
+db.ref("quiz-bot/leaderboard").remove();
+
 }
 
 function stopQuestion(){
