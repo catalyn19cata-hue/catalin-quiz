@@ -165,7 +165,7 @@ result.innerText="";
 return;
 }
 
-if((data.paused && !data.showCorrect) || !data.timerStart){
+if(data.paused || !data.timerStart){
 question.innerText="Așteaptă următoarea întrebare...";
 timer.innerText="";
 result.innerText="";
