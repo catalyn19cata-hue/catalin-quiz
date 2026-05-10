@@ -181,17 +181,16 @@ let autoFlow = false;
 
 function send(){
 
-if(autoFlow) return;
+clearInterval(timerInterval);
 
-if(!playlist.length){
-alert("Nu există întrebări.");
-return;
-}
+clearTimeout(pauseTimeout);
+clearTimeout(nextTimeout);
 
-autoFlow = true;
-currentIndex = 0;
+// trece instant la următoarea întrebare
+currentIndex++;
 
 runQuestion();
+
 }
 
 function runQuestion(){
