@@ -303,10 +303,21 @@ db.ref("scores").remove();
 }
 
 function stopQuestion(){
-db.ref("live/paused").set(true);
-if(currentIndex>=playlist.length){
-db.ref("live/finished").set(true);
-}
+
+// 🔥 oprește tot
+clearInterval(timerInterval);
+
+clearTimeout(pauseTimeout);
+clearTimeout(nextTimeout);
+
+// 🔥 dezactivează autoplay
+autoFlow = false;
+
+// 🔥 pune interfața pe pauză
+db.ref("live").update({
+paused:true
+});
+
 }
 
 db.ref("live").on("value",snap=>{
