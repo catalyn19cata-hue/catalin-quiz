@@ -202,7 +202,7 @@ container.insertBefore(btn,result);
 // 🔥 voturi sincronizate global
 
 // raspuns corect la final
-if(typeof data.timer==="number" && data.timer<=0 && data.correct){
+if(data.showCorrect && data.correct){
 document.querySelectorAll(".dynamic").forEach(b=>{
 if(b.dataset.key===data.correct){
 b.style.background="linear-gradient(90deg,#00c853,#00e676)";
