@@ -177,17 +177,40 @@ if(!playlist.length){alert("Nu există întrebări.");return;}
 alert(playlist[playlist.length-1].question);
 }
 
+let autoFlow = false;
+
 function send(){
 
-if(!playlist[currentIndex]){
-alert("Nu mai sunt întrebări în playlist.");
+if(autoFlow) return;
+
+if(!playlist.length){
+alert("Nu există întrebări.");
 return;
 }
 
-if(timerInterval) clearInterval(timerInterval);
+autoFlow = true;
+currentIndex = 0;
 
-const qObj=playlist[currentIndex];
+runQuestion();
+}
 
+function runQuestion(){
+
+// dacă s-au terminat întrebările
+if(currentIndex >= playlist.length){
+
+db.ref("live").update({
+finished:true,
+paused:true
+});
+
+autoFlow = false;
+return;
+}
+
+const qObj = playlist[currentIndex];
+
+// 🔥 PORNEȘTE ÎNTREBAREA
 db.ref("live").set({
 question:qObj.question,
 options:qObj.options,
@@ -195,18 +218,50 @@ correct:qObj.correct,
 timer:20,
 timerStart:Date.now(),
 paused:false,
+showCorrect:false,
 votes:{A:0,B:0,C:0},
 finished:false
 });
 
-let t=20;
-timerInterval=setInterval(()=>{
-db.ref("live/timer").set(t);
+let t = 20;
+
+timerInterval = setInterval(()=>{
+
 t--;
-if(t<0) clearInterval(timerInterval);
-},1000);
+
+db.ref("live/timer").set(t);
+
+// 🔥 când timpul expiră
+if(t <= 0){
+
+clearInterval(timerInterval);
+
+// arată răspunsul corect
+db.ref("live").update({
+showCorrect:true
+});
+
+// 🔥 ține răspunsul 6 secunde
+setTimeout(()=>{
+
+// 🔥 intră în pauză 5 secunde
+db.ref("live").update({
+paused:true
+});
+
+setTimeout(()=>{
 
 currentIndex++;
+runQuestion();
+
+},5000);
+
+},6000);
+
+}
+
+},1000);
+
 }
 
 function resetLive(){
