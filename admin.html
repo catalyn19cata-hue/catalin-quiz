@@ -178,7 +178,8 @@ alert(playlist[playlist.length-1].question);
 }
 
 let autoFlow = false;
-
+let pauseTimeout = null;
+let nextTimeout = null;
 function send(){
 
 clearInterval(timerInterval);
