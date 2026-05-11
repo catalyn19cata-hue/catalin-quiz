@@ -257,14 +257,14 @@ showCorrect:true
 });
 
 // 🔥 ține răspunsul 6 secunde
-setTimeout(()=>{
+pauseTimeout = setTimeout(()=>{
 
-// 🔥 intră în pauză 5 secunde
+// 🔥 intră în pauză
 db.ref("live").update({
 paused:true
 });
 
-setTimeout(()=>{
+nextTimeout = setTimeout(()=>{
 
 runQuestion(true);
 
