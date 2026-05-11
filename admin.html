@@ -203,6 +203,14 @@ runQuestion(true);
 
 function runQuestion(forceNext = false){
 
+  clearInterval(timerInterval);
+
+clearTimeout(pauseTimeout);
+clearTimeout(nextTimeout);
+
+if(forceNext){
+currentIndex++;
+}
 // dacă s-au terminat întrebările
 if(currentIndex >= playlist.length){
 
