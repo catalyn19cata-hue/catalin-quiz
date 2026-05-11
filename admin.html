@@ -182,29 +182,22 @@ let pauseTimeout = null;
 let nextTimeout = null;
 function send(){
 
-// 🔥 dacă era pe pauză -> reia
-if(!autoFlow){
-
-autoFlow = true;
-
-// dacă nu a început niciodată
-if(currentIndex === 0 && !timerInterval){
-runQuestion();
-return;
-}
-
-// continuă cu următoarea
-runQuestion();
-return;
-}
-
-// 🔥 NEXT manual în timpul rulării
 clearInterval(timerInterval);
 
 clearTimeout(pauseTimeout);
 clearTimeout(nextTimeout);
 
+// 🔥 dacă era oprit
+if(!autoFlow){
+
+autoFlow = true;
+
 runQuestion();
+return;
+}
+
+// 🔥 NEXT manual
+runQuestion(true);
 
 }
 
