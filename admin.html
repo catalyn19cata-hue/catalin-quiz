@@ -194,7 +194,6 @@ return;
 }
 
 // continuă cu următoarea
-currentIndex++;
 runQuestion();
 return;
 }
@@ -205,13 +204,11 @@ clearInterval(timerInterval);
 clearTimeout(pauseTimeout);
 clearTimeout(nextTimeout);
 
-currentIndex++;
-
 runQuestion();
 
 }
 
-function runQuestion(){
+function runQuestion(forceNext = false){
 
 // dacă s-au terminat întrebările
 if(currentIndex >= playlist.length){
