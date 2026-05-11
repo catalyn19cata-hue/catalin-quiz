@@ -280,6 +280,13 @@ runQuestion(true);
 
 function resetLive(){
 
+clearInterval(timerInterval);
+
+clearTimeout(pauseTimeout);
+clearTimeout(nextTimeout);
+
+autoFlow = false;
+
 currentIndex=0;
 
 // reset live
